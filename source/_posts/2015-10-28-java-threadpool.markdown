@@ -103,3 +103,12 @@ for (int i = 0; i < 10; i++) {
 }
 ```
 适合执行一些有时间要求的操作,比如数据库的操作
+
+##关于停止线程的一些操作(android)
+
+* 在Handler很简单,如果直接调用handler.removecallbacks(runnable)即可,例如在postdelay时间之内想停止post,则可以removecallbacks操作.
+* Timer的终止操作. <br>(a)在如何想要终止的地方调用timer.cancel<br>(b)让timer线程成为daemon线程,只需要在创建额度时候(new Timer(true)),这样当程序中只有daemon线程的时候,它会自动终止.<br>(c)删除引用,也就是timer置为null<br>(d)放大招,System.exit方法,秒杀掉所有线程
+* 普通线程的停止<br>线程有一个弃用的方法stop,属于线程不安全的.所以很不建议使用,使用会出现各种各样的问题,后果自负哟.<br>*方法一*那就是在run方法里自己添加一个成员变量呗,去检查,如果不符合退出循环呗(我们知道线程run结束后便会自行销毁的)<br>*方法二*那就是对于一些阻塞的线程我们该怎么处理呢,比如socket.connect.read,这个时候我们就要用到**Thread.interrupt**,这个方法是安全的,这个只能将阻塞的线程唤醒,而非阻塞的是没有效果的,中断的时候会抛出一个异常(interrupetion),我们前边所说的socket.connection.read的阻塞就会接收这个异常,这个我们在run方法轮询的时候只需要`while(!this.isInterrupted())`,判断是interrupt状态之后直接退出就可以了
+
+
+Android在自己的API中加入了process类,killProcess(int pid),这其中的pid可以通过Process.mypid()获取,但是要注意这样终结的是整个程序!
