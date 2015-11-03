@@ -494,5 +494,98 @@ puts arr[1]
 IO.foreach("input.txt"){|block| puts block}  #这段代码将把文件 test 的内容逐行传给变量 block，然后输出将显示在屏幕上。
 ```
 
-* File.rename  File.delete
+* File.rename  File.delete<br>文件的重命名和删除
+* 文件查询
 
+```ruby
+File::exists?("file.rb")#文件是否存在
+File.file?("text.rb")#文件是否是一个文件
+File::directory("text.rb")#是否是一个目录
+
+```
+* 文件目录Dir
+
+```ruby
+Dir.chdir("/a/b")#改变目录
+Dir.pwd("/a/b")#获取当前目录
+Dir.entries("/a/b").join(' ')#获取当前目录下的文件和目录列表 
+Dir["/a/b/*"]#同上
+```
+
+[File的类及其内建方法](http://www.runoob.com/ruby/ruby-file-methods.html)<br>[Dir的类及其内建方法](http://www.runoob.com/ruby/ruby-dir-methods.html)
+
+* 异常捕获
+
+语法
+<pre>
+begin #开始
+ 
+ raise.. #抛出异常
+ 
+rescue [ExceptionType = StandardException] #捕获指定类型的异常 缺省值是StandardException
+ $! #表示异常信息
+ $@ #表示异常出现的代码位置
+else #其余异常
+ ..
+ensure #不管有没有异常，进入该代码块
+ 
+end #结束
+</pre>
+从 begin 到 rescue 中的一切是受保护的。如果代码块执行期间发生了异常，控制会传到 rescue 和 end 之间的块。
+对于 begin 块中的每个 rescue 子句，Ruby 把抛出的异常与每个参数进行轮流比较。如果 rescue 子句中命名的异常与当前抛出的异常类型相同，或者是该异常的父类，则匹配成功。
+如果异常不匹配所有指定的错误类型，我们可以在所有的 rescue 子句后使用一个 else 子句。
+
+```ruby
+#!/usr/bin/ruby
+
+begin  
+  raise 'A test exception.'  
+rescue Exception => e  
+  puts e.message  
+  puts e.backtrace.inspect  
+end  
+```
+
+输出结果为<br>
+> A test exception.<br>
+> ["main.rb:4"]
+
+```ruby
+begin 
+   #.. 过程 
+   #.. 抛出异常
+rescue 
+   #.. 处理错误
+else
+   #.. 如果没有异常则执行
+ensure 
+   #.. 最后确保执行
+   #.. 这总是会执行
+end
+```
+
+**使用 $! 变量可以捕获抛出的错误消息。**
+
+**Catch 和 Throw**
+
+raise 和 rescue 的异常机制能在发生错误时放弃执行，有时候需要在正常处理时跳出一些深层嵌套的结构。此时 catch 和 throw 就派上用场了。
+catch 定义了一个使用给定的名称（可以是 Symbol 或 String）作为标签的块。块会正常执行知道遇到一个 throw。
+
+```ruby
+def promptAndGet(prom)
+  print prom
+  res = readline.chomp
+  throw :quitRequested if res == "!"
+  return res
+end
+
+catch :quitRequested do
+  name = promptAndGet("Name: ") #从此处开始执行
+  age = promptAndGet("Age: ")
+  sex = promptAndGet("Sex: ")
+  # ..
+  # 处理信息
+end
+promptAndGet("Name:")
+```
+上面的程序需要人工交互,程序将从catch 定义的块开始执行,直到遇到 throw才会终止.
