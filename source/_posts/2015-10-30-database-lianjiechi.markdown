@@ -3,7 +3,7 @@ layout: post
 title: "数据库连接池(C3P0)"
 date: 2015-10-30 11:36:42 +0800
 comments: true
-categories: 数据库
+categories: Database
 ---
 **什么是数据库连接池呢?**
 
