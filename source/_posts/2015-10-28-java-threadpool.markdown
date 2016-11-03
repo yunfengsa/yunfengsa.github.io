@@ -4,6 +4,7 @@ title: "浅谈java线程池"
 date: 2015-10-28 21:39:46 +0800
 comments: true
 categories: android
+keywords: threadpool 线性安全 共享资源
 ---
 
 我们知道多次使用new Thread会增加系统开销,占用过多会导致oom,进程的时间也是很难把握.引用java的四种线程池可以有效控制线程的复用以及线程的执行
@@ -112,3 +113,89 @@ for (int i = 0; i < 10; i++) {
 
 
 Android在自己的API中加入了process类,killProcess(int pid),这其中的pid可以通过Process.mypid()获取,但是要注意这样终结的是整个程序!
+
+##关于线程中的局部变量
+
+局部变量存储在线程自己的栈中。也就是说，局部变量永远也不会被多个线程共享。所以，基础类型的局部变量是线程安全的。下面是基础类型的局部变量的一个例子：
+
+```java
+
+public void someMethod(){
+
+  long threadSafeInt = 0;
+
+  threadSafeInt++;
+}
+
+```
+
+**对象的局部引用和基础类型的局部变量不太一样**。尽管引用本身没有被共享，但引用所指的对象并没有存储在线程的栈内。所有的对象都存在共享堆中。如果在某个方法中创建的对象不会逃逸出（译者注：即该对象不会被其它方法获得，也不会被非局部变量引用到）该方法，那么它就是线程安全的。实际上，哪怕将这个对象作为参数传给其它方法，只要别的线程获取不到这个对象，那它仍是线程安全的。下面是一个线程安全的局部引用样例：
+
+```java
+
+public void someMethod(){
+
+  LocalObject localObject = new LocalObject();
+
+  localObject.callMethod();
+  method2(localObject);
+}
+
+public void method2(LocalObject localObject){
+  localObject.setValue("value");
+}
+
+
+```
+
+样例中 LocalObject 对象没有被方法返回，也没有被传递给 someMethod()方法外的对象。每个执行 someMethod()的线程都会创建自己的 LocalObject 对象，并赋值给 localObject 引用。因此，这里的 LocalObject 是线程安全的。事实上，整个 someMethod()都是线程安全的。即使将 LocalObject 作为参数传给同一个类的其它方法或其它类的方法时，它仍然是线程安全的。当然，如果 LocalObject 通过某些方法被传给了别的线程，那它就不再是线程安全的了。
+
+**对象成员**存储在堆上。如果两个线程同时更新同一个对象的同一个成员，那这个代码就不是线程安全的。下面是一个样例：
+
+```java
+
+public class NotThreadSafe{
+    StringBuilder builder = new StringBuilder();
+
+    public add(String text){
+        this.builder.append(text);
+    }    
+}
+
+```
+
+如果两个线程同时调用同一个 NotThreadSafe 实例上的 add()方法，就会有竞态条件问题。例如：
+
+```java
+
+NotThreadSafe sharedInstance = new NotThreadSafe();
+
+new Thread(new MyRunnable(sharedInstance)).start();
+new Thread(new MyRunnable(sharedInstance)).start();
+
+public class MyRunnable implements Runnable{
+  NotThreadSafe instance = null;
+
+  public MyRunnable(NotThreadSafe instance){
+    this.instance = instance;
+  }
+
+  public void run(){
+    this.instance.add("some text");
+  }
+}
+
+```
+
+注意两个 MyRunnable 共享了同一个 NotThreadSafe 对象。因此，当它们调用 add()方法时会造成竞态条件。
+
+当然，如果这两个线程在不同的 NotThreadSafe 实例上调用 call()方法，就不会导致竞态条件。下面是稍微修改后的例子：
+
+```java
+
+new Thread(new MyRunnable(new NotThreadSafe())).start();
+new Thread(new MyRunnable(new NotThreadSafe())).start();
+
+```
+
+现在两个线程都有自己单独的 NotThreadSafe 对象，调用 add()方法时就会互不干扰，再也不会有竞态条件问题了。所以非线程安全的对象仍可以通过某种方式来消除竞态条件。

@@ -1,9 +1,10 @@
 ---
 layout: post
-title: "Android JVM GC那点事"
+title: "Android JVM GC那点事（Dalvik ART）"
 date: 2015-11-12 11:46:40 +0800
 comments: true
 categories: android
+keywords: GC Dalvik 虚拟机 ART
 ---
 
 详述一下深奥的安卓内存回收那点事
@@ -186,3 +187,71 @@ Total_time: 表示本次GC所花费的总时间和上面的Pause_time,也就是s
 基本情况和Dalvik没有什么差别，GC的Reason更多了，还多了一个OS_Space_Status.
  LOS_Space_Status：Large Object Space，大对象占用的空间，这部分内存并不是分配在堆上的，但仍属于应用程序内存空间，主要用来管理 bitmap 等占内存大的对象，避免因分配大内存导致堆频繁 GC。
 </pre>
+
+
+
+
+##输入了解Dalvik
+
+Dalvik虚拟机用来分配对象的堆划分为两部分，一部分叫做Active Heap，另一部分叫做Zygote Heap。从前面Dalvik虚拟机的启动过程分析这篇文章可以知道，Android系统的第一个Dalvik虚拟机是由Zygote进程创建的。再结合Android应用程序进程启动过程的源代码分析这篇文章，我们可以知道，应用程序进程是由Zygote进程fork出来的。也就是说，应用程序进程使用了一种写时拷贝技术（COW）来复制了Zygote进程的地址空间。这意味着一开始的时候，应用程序进程和Zygote进程共享了同一个用来分配对象的堆。然而，当Zygote进程或者应用程序进程对该堆进行写操作时，内核就会执行真正的拷贝操作，使得Zygote进程和应用程序进程分别拥有自己的一份拷贝。
+
+拷贝是一件费时费力的事情。因此，为了尽量地避免拷贝，Dalvik虚拟机将自己的堆划分为两部分。事实上，Dalvik虚拟机的堆最初是只有一个的。也就是Zygote进程在启动过程中创建Dalvik虚拟机的时候，只有一个堆。但是当Zygote进程在fork第一个应用程序进程之前，会将已经使用了的那部分堆内存划分为一部分，还没有使用的堆内存划分为另外一部分。前者就称为Zygote堆，后者就称为Active堆。以后无论是Zygote进程，还是应用程序进程，当它们需要分配对象的时候，都在Active堆上进行。这样就可以使得Zygote堆尽可能少地被执行写操作，因而就可以减少执行写时拷贝的操作。在Zygote堆里面分配的对象其实主要就是Zygote进程在启动过程中预加载的类、资源和对象了。这意味着这些预加载的类、资源和对象可以在Zygote进程和应用程序进程中做到长期共享。这样既能减少拷贝操作，还能减少对内存的需求。
+
+**垃圾收集是大名鼎鼎的Mark-Sweep**
+
+在垃圾收集的Mark阶段，要求除了垃圾收集线程之外，其它的线程都停止，否则的话，就会可能导致不能正确地标记每一个对象。这种现象在垃圾收集算法中称为Stop The World，会导致程序中止执行，造成停顿的现象。为了尽可能地减少停顿，我们必须要允许在Mark阶段有条件地允许程序的其它线程执行。这种垃圾收集算法称为并行垃圾收集算法（Concurrent GC）。为了实现Concurrent GC，Mark阶段又划分两个子阶段。第一个子阶段只负责标记根集对象。所谓的根集对象，就是指在GC开始的瞬间，被全局变量、栈变量和寄存器等引用的对象。有了这些根集变量之后，我们就可以顺着它们找到其余的被引用变量。例如，一个栈变量引了一个对象，而这个对象又通过成员变量引用了另外一个对象，那该被引用的对象也会同时标记为正在使用。这个标记被根集对象引用的对象的过程就是第二个子阶段。在Concurrent GC，第一个子阶段是不允许垃圾收集线程之外的线程运行的，但是第二个子阶段是允许的。不过，在第二个子阶段执行的过程中，如果一个线程修改了一个对象，那么该对象必须要记录起来，因为它很有可能引用了新的对象，或者引用了之前未引用过的对象。如果不这样做的话，那么就会导致被引用对象还在使用然而却被回收。这种情况出现在只进行部分垃圾收集的情况，这时候Card Table的作用就是用来记录非垃圾收集堆对象对垃圾收集堆对象的引用。Dalvik虚拟机进行部分垃圾收集时，实际上就是只收集在Active堆上分配的对象。因此对Dalvik虚拟机来说，Card Table就是用来记录在Zygote堆上分配的对象在部收垃圾收集执行过程中对在Active堆上分配的对象的引用。
+
+##输入了解ART
+
+####ART基本概述：
+
+我们都知道art虚拟机最明显的特征是其运行本地及其指令，实现java虚拟机的接口，内部集成垃圾回收机制，还有java核心类库。利用AOT直接对dex进行翻译得到本地机器指令，就可以直接运行。翻译机器指令的是基于[LLVM]("http://www.aosabook.org/en/llvm.html"),其中，前端（Frontend）对输入的源代码（Source Code）进行语法分析后，生成一棵抽象语法树（Abstract Syntax Tree，AST），并且可以进一步将得到的抽象语法树转化一种称为LLVM IR的中间语言。LLVM IR是一种与编程语言无关的中间语言，也就是说，不管是C语言，还是Fortran、Ada语言编写的源文件，经过语法分析后，最终都可以得到一个对应的LLVM IR文件。这个LLVM IR文件可以作为后面的优化器（Optimizer）和后端（Backend）的输入文件。优化器对LLVM IR文件进行优化，例如消除代码里面的冗余计算，以提到最终生成的代码的执行效率。后端负责生成最终的机器指令。
+
+在Dalvik运行时中，APK在安装的时候，安装服务PackageManagerService会通过守护进程installd调用一个工具dexopt对打包在APK里面包含有Dex字节码的classes.dex进行优化，优化得到的文件保存在/data/dalvik-cache目录中，并且以.odex为后缀名，表示这是一个优化过的Dex文件。在ART运行时中，APK在安装的时候，同样安装服务PackageManagerService会通过守护进程installd调用另外一个工具dex2oat对打包在APK里面包含有Dex字节码进翻译。这个翻译器实际上就是基于LLVM架构实现的一个编译器，它的前端是一个Dex语法分析器。翻译后得到的是一个ELF格式的oat文件，这个oat文件同样是以.odex后缀结束，并且也是保存在/data/dalvik-cache目录中。
+
+<!--more-->
+
+
+* android启动的时候创建Zygote利用art运行时到处的java虚拟机接口创建art虚拟机。
+* 打包的.dex文件被工具dex2oat翻译成本地机器指令，最终得到一个ELF格式的oat文件。
+* apk运行时，oat文件被加载到内存中，并且art虚拟机通过oatdata和oatexec段可以找到任意一个类的方法对应的本地机器指令来执行。
+
+####ART垃圾收集
+
+ART也用到了Mark-sweep
+
+ART运行时堆划分为四个空间，分别是Image Space、Zygote Space、Allocation Space和Large Object Space。其中，Image Space、Zygote Space、Allocation Space是在地址上连续的空间，称为Continuous Space，而Large Object Space是一些离散地址的集合，用来分配一些大对象，称为Discontinuous Space。
+
+Image Space空间包含了需要预加载的系统类对象，Zygote Space和Allocation Space与Dalvik虚拟机垃圾收集机制中的Zygote堆和Active堆的作用是一样的。Zygote Space在Zygote进程和应用程序进程之间共享的，而Allocation Space则是每个进程独占的。同样的，Zygote进程一开始只有一个Image Space和一个Zygote Space。在Zygote进程fork第一个子进程之前，就会把Zygote Space一分为二，原来的已经被使用的那部分堆还叫Zygote Space，而未使用的那部分堆就叫Allocation Space。以后的对象都在Allocation Space上分配。通过上述这种方式，就可以使得Image Space和Zygote Space在Zygote进程和应用程序进程之间进行共享，而Allocation Space就每个进程都独立地拥有一份。注意，虽然Image Space和Zygote Space都是在Zygote进程和应用程序进程之间进行共享，但是前者的对象只创建一次，而后者的对象需要在系统每次启动时根据运行情况都重新创建一遍。
+
+Heap类还定义了以下三个垃圾收集接口：
+
+        1. CollectGarbage: 用来执行显式GC，例如用实现System.gc接口。
+
+        2. ConcurrentGC: 用来执行并行GC，只能被ART运行时内部的GC守护线程调用。
+
+        3. CollectGarbageInternal: ART运行时内部调用的GC接口，可以执行各种类型的GC。
+
+ART的三种垃圾收集类型：
+
+StickyMarkSweep继承于PartialMarkSweep，PartialMarkSweep又继承于MarkSweep、而MarkSweep又继承于GarbageCollector。因此，我们可以推断出，GarbageCollector定义了垃圾收集器接口，而MarkSweep、PartialMarkSweep和StickyMarkSweep通过重定某些接口来实现不同类型的垃圾收集器。
+
+*GarbageCollector*通过定义以下五个虚函数描述GC的各个阶段：		
+
+       1. InitializePhase: 用来实现GC的初始化阶段，用来初始化垃圾收集器内部的状态。
+
+       2. MarkingPhase: 用来实现GC的标记阶段，该阶段有可能是并行的，也有可能不是并行。
+
+       3. HandleDirtyObjectsPhase: 用来实现并行GC的Dirty Object标记，也就是递归标记那些在并行标记对象阶段中被修改的对象。
+
+       4. ReclaimPhase: 用来实现GC的回收阶段。
+
+       5. FinishPhase: 用来实现GC的结束阶段。
+
+*MarkSweep*类通过重写上述五个虚函数实现自己的垃圾收集过程，同时，它又通过定义以下三个虚函数来让子类PartialMarkSweep和StickyMarkSweep实现特定的垃圾收集器：
+
+       1. MarkReachableObjects: 用来递归标记从根集对象引用的其它对象。
+
+       2. BindBitmap: 用来指定垃圾收集范围。
+
+       3. Sweep: 用来回收垃圾对象。 

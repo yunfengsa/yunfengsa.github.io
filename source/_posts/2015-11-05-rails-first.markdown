@@ -27,3 +27,49 @@ nokogiri 是一个开源的渲染器,rails的基本组件中理论上已经包�
 5. Run bundle update nokogiri if bundle has locked Nokogiri at some version.
 
 可能因为我更新过bundle,里边有两个版本的nokogiri 卸载掉老版的就行了.
+
+##强烈建议ubuntu，前两天ubuntu升级，也导致了ruby的损坏
+
+还是乖乖用nvm吧
+
+####安装RVM
+
+	$ gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3
+	$ curl -sSL https://get.rvm.io | bash -s stable
+	# 如果上面的连接失败，可以尝试: 
+	$ curl -L https://raw.githubusercontent.com/wayneeseguin/rvm/master/binscripts/rvm-installer | bash -s stable
+
+出现ssl错误，按照command option提示操作（别忘记source！！）。
+
+	$ source ~/.rvm/scripts/rvm
+修改 RVM 下载 Ruby 的源，到 Ruby China 的镜像:
+
+	echo "ruby_url=https://cache.ruby-china.org/pub/ruby" > ~/.rvm/user/db
+
+检查一下是否安装正确`rvm -v`
+
+####安装ruby
+
+	$ rvm requirements
+	$ rvm install 2.3.0
+
+
+RVM 装好以后，需要执行下面的命令将指定版本的 Ruby 设置为系统默认版本
+
+	$ rvm use 2.3.0 --default
+安装 Bundler
+	$ gem install bundler
+
+####安装rails
+
+$ gem install rails
+
+接下来就是可以raile new xx喽，很可能出现netparseerror，安装openssl之后还出现问题，那就是GFW了，更改gem的源就行了 https://ruby.taobao.org/或者https://gems.ruby-china.org/   然后：
+
+	$ bundle config mirror.https://rubygems.org https://ruby.taobao.org
+或者修改Gemfile的source
+	source 'https://rubygems.org/'
+	gem 'rails', '4.1.0'
+	...
+然后：
+	bundle install
