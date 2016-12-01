@@ -4,10 +4,10 @@
 
 url: http://yunfengsa.github.io
 title: 静心思考，笑看得失
-subtitle: 宏图远志莫如蜗牛精神
-author: 云枫飒
+subtitle: MY DOG HOUSE
+author: yunfengsa
 simple_search: https://www.google.com/search
-description:
+description: 作为个人笔记心得记录的载体
 
 # Default date format is "ordinal" (resulting in "July 22nd 2007")
 # You can customize the format as defined in
@@ -63,23 +63,23 @@ default_asides: [asides/recent_posts.html,asides/category_list.html,custom/aside
 # ----------------------- #
 
 # Github repositories
-github_user:
+github_user: yunfengsa
 github_repo_count: 0
 github_show_profile_link: true
 github_skip_forks: true
 
 # Twitter
-twitter_user:
-twitter_tweet_button: true
+#twitter_user:
+#twitter_tweet_button: true
 
 # Google +1
-google_plus_one: false
-google_plus_one_size: medium
+#google_plus_one: false
+#google_plus_one_size: medium
 
 # Google Plus Profile
 # Hidden: No visible button, just add author information to search results
-googleplus_user:
-googleplus_hidden: false
+#googleplus_user:
+#googleplus_hidden: false
 
 # Pinboard
 pinboard_user:
@@ -90,11 +90,13 @@ delicious_user:
 delicious_count: 3
 
 # Disqus Comments
-disqus_short_name: yunfengsa
-disqus_show_comment_count: true
+#disqus_short_name: yunfengsa
+#disqus_show_comment_count: true
 
 # Google Analytics
 google_analytics_tracking_id: UA-88090114-1
 
 # Facebook Like
-facebook_like: false
+#facebook_like: false
+
+youyanshare: true

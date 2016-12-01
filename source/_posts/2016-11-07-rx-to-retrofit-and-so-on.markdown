@@ -79,3 +79,7 @@ Observable.just(1,2,3).repeatWhen(new Func1<Observable<? extends Void>, Observab
 ```
 
 ####[Rx操作符2](http://blog.csdn.net/job_hesc/article/details/46495281)
+
+####[Rx操作符3]（http://blog.csdn.net/job_hesc/article/details/46495281）
+
+####[Rx操作符4](http://blog.csdn.net/job_hesc/article/details/46612015)
