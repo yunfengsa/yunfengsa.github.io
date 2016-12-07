@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>android性能优化第二篇_浅谈数据库优化 | 云枫飒的笔记BLOG</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="###1.数据库的优化是一个比较重要也是比较难把握的地方,我们先简单介绍一下数据库索引索引,可以简单理解为目录,目录的大小要合适才会提高效率
+优点可以大幅度提高检索的速度,包括单表查询,多表查询,分组查询,排序查询.
+缺点进行数据库增删改的时候要对索引进行维护,所以会对增删改的操作影响性能.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="android性能优化第二篇_浅谈数据库优化">
+<meta property="og:url" content="http://yunfengsa.github.io/2015/10/28/android-xingnengyouhua-database/index.html">
+<meta property="og:site_name" content="云枫飒的笔记BLOG">
+<meta property="og:description" content="###1.数据库的优化是一个比较重要也是比较难把握的地方,我们先简单介绍一下数据库索引索引,可以简单理解为目录,目录的大小要合适才会提高效率
+优点可以大幅度提高检索的速度,包括单表查询,多表查询,分组查询,排序查询.
+缺点进行数据库增删改的时候要对索引进行维护,所以会对增删改的操作影响性能.">
+<meta property="og:updated_time" content="2016-12-07T07:33:47.856Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="android性能优化第二篇_浅谈数据库优化">
+<meta name="twitter:description" content="###1.数据库的优化是一个比较重要也是比较难把握的地方,我们先简单介绍一下数据库索引索引,可以简单理解为目录,目录的大小要合适才会提高效率
+优点可以大幅度提高检索的速度,包括单表查询,多表查询,分组查询,排序查询.
+缺点进行数据库增删改的时候要对索引进行维护,所以会对增删改的操作影响性能.">
+  
+    <link rel="alternate" href="/atom.xml" title="云枫飒的笔记BLOG" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">云枫飒的笔记BLOG</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">个人技术记录</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Zoeken"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yunfengsa.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-android-xingnengyouhua-database" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/10/28/android-xingnengyouhua-database/" class="article-date">
+  <time datetime="2015-10-28T14:22:09.000Z" itemprop="datePublished">2015-10-28</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/android/">android</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      android性能优化第二篇_浅谈数据库优化
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>###1.数据库的优化是一个比较重要也是比较难把握的地方,我们先简单介绍一下数据库索引<br>索引,可以简单理解为目录,目录的大小要合适才会提高效率</p>
+<p><strong>优点</strong><br><br>可以大幅度提高检索的速度,包括单表查询,多表查询,分组查询,排序查询.</p>
+<p><strong>缺点</strong><br><br>进行数据库增删改的时候要对索引进行维护,所以会对增删改的操作影响性能.<br><a id="more"></a><br><strong>索引的类型</strong></p>
+<ul>
+<li>直接创建索引和间接创建索引<br><br>1.直接创建,Android在SQLiteOpenHelper的oncreate或者onUpgrade进行excuSql创建语句<blockquote>
+<p>CREATE INDEX mycolumn_index ON mytable (myclumn)</p>
+</blockquote>
+</li>
+</ul>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;2.间接创建: 定义主键约束或者唯一性键约束，可以间接创建索引，主键默认为唯一索引。</p>
+<ul>
+<li>普通索引和唯一性索引</li>
+</ul>
+<p>普通索引：<br><code>CREATE INDEX mycolumn_index ON mytable (myclumn)</code><br>唯一性索引：保证在索引列中的全部数据是唯一的，对聚簇索引和非聚簇索引都可以使用，语句为</p>
+<p><code>CREATE UNIQUE COUSTERED INDEX myclumn_cindex ON mytable(mycolumn)</code></p>
+<ul>
+<li>单个索引和复合索引</li>
+</ul>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;单个索引：索引建立语句中仅包含单个字段，如上面的普通索引和唯一性索引创建示例。</p>
+<p>&nbsp;&nbsp;&nbsp;复合索引：又叫组合索引，在索引建立语句中同时包含多个字段，语句如：</p>
+<p>&nbsp;<code>CREATE INDEX name_index ON username(firstname, lastname)</code><br>其中firstname为前导列。</p>
+<ul>
+<li>聚簇索引和非聚簇索引(聚集索引，群集索引)</li>
+</ul>
+<p>&nbsp;聚簇索引：物理索引，与基表的物理顺序相同，数据值的顺序总是按照顺序排列，语句为：</p>
+<p><code>CREATE CLUSTERED INDEX mycolumn_cindex ON mytable(mycolumn) WITH ALLOW_DUP_ROW</code><br>其中WITH ALLOW_DUP_ROW表示允许有重复记录的聚簇索引</p>
+<p>&nbsp;非聚簇索引：</p>
+<p><code>CREATE UNCLUSTERED INDEX mycolumn_cindex ON mytable(mycolumn)</code><br>索引默认为非聚簇索引</p>
+<p><strong>这一部分只作为简单了解,毕竟android上的优化有限</strong></p>
+<p>###2.事务<br>Sqlit在为进行插入,更新数据的时候自动会插入一个事务,如果这个过程可以在进行多次操作的时候只进行一次,则性能会有很大的提升</p>
+<p>以下为显式使用事务的过程<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">insertWithOneTransaction</span><span class="params">()</span> </span>&#123;</div><div class="line">    SQLiteDatabase db = sqliteOpenHelper.getWritableDatabase();</div><div class="line">    <span class="comment">// Begins a transaction</span></div><div class="line">    db.beginTransaction();</div><div class="line">    <span class="keyword">try</span> &#123;</div><div class="line">        <span class="comment">// your sqls</span></div><div class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">100</span>; i++) &#123;</div><div class="line">            db.insert(yourTableName, <span class="keyword">null</span>, value);</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="comment">// marks the current transaction as successful</span></div><div class="line">        db.setTransactionSuccessful();</div><div class="line">    &#125; <span class="keyword">catch</span> (Exception e) &#123;</div><div class="line">        <span class="comment">// process it</span></div><div class="line">        e.printStackTrace();</div><div class="line">    &#125; <span class="keyword">finally</span> &#123;</div><div class="line">        <span class="comment">// end a transaction</span></div><div class="line">        db.endTransaction();</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>###3.异步线程</p>
+<p>Sqlite是一个关系型数据库,<strong>Sqlite最大的特点是,它是一个内嵌式的数据库,数据库服务器就在你的程序中,数据库的服务端和客户端运行在同一个进行中</strong></p>
+<p>一般情况下,表查询的用时比较短不会出现anr(主线程耗时过长容易触发),但是如果超过100ms 最好还是利用单线程进行操作,然后利用<a href="http://developer.android.com/intl/zh-cn/reference/android/content/AsyncQueryHandler.html" target="_blank" rel="external">AsyncQueryHandler</a> 或者直接用简单的<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">ExecutorService singleThreadExecutor = Executors.newSingleThreadExecutor();</div><div class="line">singleThreadExecutor.execute(<span class="keyword">new</span> Runnable() &#123;</div><div class="line"></div><div class="line">	<span class="meta">@Override</span></div><div class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">		<span class="comment">// db operetions, u can use handler to send message after</span></div><div class="line">		db.insert(yourTableName, <span class="keyword">null</span>, value);</div><div class="line">		handler.sendEmptyMessage(xx);</div><div class="line">	&#125;</div><div class="line">&#125;);</div></pre></td></tr></table></figure></p>
+<p>###总结:<br>在android开发中,数据的优化确实不是一个最主要的问题,但是对于一个对安卓热爱的小蜗牛,如果程序中能想到的优化,只能有数据库级的话,想起来还是小鸡冻(danteng)啊…</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yunfengsa.github.io/2015/10/28/android-xingnengyouhua-database/" data-id="ciwemdodv0000zsri5olsbwe0" class="article-share-link">Delen</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2015/10/29/android-xingnengyouhua-layout/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Nieuwer</strong>
+      <div class="article-nav-title">
+        
+          android_性能优化第三篇_布局篇
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2015/10/28/java-threadpool/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Ouder</strong>
+      <div class="article-nav-title">浅谈java线程池</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categorieën</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Chromium/">Chromium</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Database/">Database</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Markdown/">Markdown</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Ruby/">Ruby</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/android/">android</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/gradle/">gradle</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/ndk/">ndk</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/octopress/">octopress</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/opencv/">opencv</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/rails/">rails</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/ruby/">ruby</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/rx/">rx</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/weex/">weex</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/设计模式/">设计模式</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Labels</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/binder/">binder</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/surface/">surface</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/binder/" style="font-size: 10px;">binder</a> <a href="/tags/surface/" style="font-size: 10px;">surface</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archieven</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/12/">December 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">November 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/10/">October 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">May 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">April 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">January 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">December 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">November 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">October 2015</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recente berichten</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2016/12/07/hello-world/">Hello World</a>
+          </li>
+        
+          <li>
+            <a href="/2016/11/28/weex-and-vue-and-so-on/">开启Vue学习之旅</a>
+          </li>
+        
+          <li>
+            <a href="/2016/11/07/rx-to-retrofit-and-so-on/">Rx的进攻路线（选取比较好的文章）</a>
+          </li>
+        
+          <li>
+            <a href="/2016/11/06/find-a-way-to-gesturerecognization/">Find A Way to Gesture Recognization</a>
+          </li>
+        
+          <li>
+            <a href="/2016/11/02/camkeandopencv/">CMake编译NDK，以及在OpenCV中的应用</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2016 yunfengsa<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>

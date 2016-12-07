@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>浅谈java线程池 | 云枫飒的笔记BLOG</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="我们知道多次使用new Thread会增加系统开销,占用过多会导致oom,进程的时间也是很难把握.引用java的四种线程池可以有效控制线程的复用以及线程的执行
+###第一种:newCachedThreadPool故名思议,是一种可以缓存的线程池,可灵活回收空闲的线程1234567891011121314151617ExecutorService cachedThreadPool = Executo">
+<meta property="og:type" content="article">
+<meta property="og:title" content="浅谈java线程池">
+<meta property="og:url" content="http://yunfengsa.github.io/2015/10/28/java-threadpool/index.html">
+<meta property="og:site_name" content="云枫飒的笔记BLOG">
+<meta property="og:description" content="我们知道多次使用new Thread会增加系统开销,占用过多会导致oom,进程的时间也是很难把握.引用java的四种线程池可以有效控制线程的复用以及线程的执行
+###第一种:newCachedThreadPool故名思议,是一种可以缓存的线程池,可灵活回收空闲的线程1234567891011121314151617ExecutorService cachedThreadPool = Executo">
+<meta property="og:updated_time" content="2016-12-07T07:33:47.856Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="浅谈java线程池">
+<meta name="twitter:description" content="我们知道多次使用new Thread会增加系统开销,占用过多会导致oom,进程的时间也是很难把握.引用java的四种线程池可以有效控制线程的复用以及线程的执行
+###第一种:newCachedThreadPool故名思议,是一种可以缓存的线程池,可灵活回收空闲的线程1234567891011121314151617ExecutorService cachedThreadPool = Executo">
+  
+    <link rel="alternate" href="/atom.xml" title="云枫飒的笔记BLOG" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">云枫飒的笔记BLOG</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">个人技术记录</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Zoeken"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yunfengsa.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-java-threadpool" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/10/28/java-threadpool/" class="article-date">
+  <time datetime="2015-10-28T13:39:46.000Z" itemprop="datePublished">2015-10-28</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/android/">android</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      浅谈java线程池
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>我们知道多次使用new Thread会增加系统开销,占用过多会导致oom,进程的时间也是很难把握.引用java的四种线程池可以有效控制线程的复用以及线程的执行</p>
+<p>###第一种:newCachedThreadPool<br>故名思议,是一种可以缓存的线程池,可灵活回收空闲的线程<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">ExecutorService cachedThreadPool = Executors.newCachedThreadPool();</div><div class="line"><span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">10</span>; i++) &#123;</div><div class="line">	<span class="keyword">final</span> <span class="keyword">int</span> index = i;</div><div class="line">	<span class="keyword">try</span> &#123;</div><div class="line">		Thread.sleep(index * <span class="number">1000</span>);</div><div class="line">	&#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</div><div class="line">		e.printStackTrace();</div><div class="line">	&#125;</div><div class="line"></div><div class="line">	cachedThreadPool.execute(<span class="keyword">new</span> Runnable() &#123;</div><div class="line"></div><div class="line">		<span class="meta">@Override</span></div><div class="line">		<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">			System.out.println(index);</div><div class="line">		&#125;</div><div class="line">	&#125;);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>线程池本身为无限大,但是可以灵活复用.<br><a id="more"></a></p>
+<p>###第二种 newFixedThreadPool<br>可以控制线程的并发数,当大于限制的数量的时候,后来的线程会在当前队列中等待<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">ExecutorService fixedThreadPool = Executors.newFixedThreadPool(<span class="number">3</span>);</div><div class="line"><span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">10</span>; i++) &#123;</div><div class="line">	<span class="keyword">final</span> <span class="keyword">int</span> index = i;</div><div class="line">	fixedThreadPool.execute(<span class="keyword">new</span> Runnable() &#123;</div><div class="line"></div><div class="line">		<span class="meta">@Override</span></div><div class="line">		<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">			<span class="keyword">try</span> &#123;</div><div class="line">				System.out.println(index);</div><div class="line">				Thread.sleep(<span class="number">2000</span>);</div><div class="line">			&#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</div><div class="line">				<span class="comment">// TODO Auto-generated catch block</span></div><div class="line">				e.printStackTrace();</div><div class="line">			&#125;</div><div class="line">		&#125;</div><div class="line">	&#125;);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>所以程序的结果为每两秒会答应三个数字</p>
+<p>###第三种 newScheduledThreadPool<br>创建一个定长的线程池,同时可以定时和周期性执行任务</p>
+<p><strong>延时执行</strong><br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(<span class="number">5</span>);</div><div class="line">scheduledThreadPool.schedule(<span class="keyword">new</span> Runnable() &#123;</div><div class="line"></div><div class="line">	<span class="meta">@Override</span></div><div class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">		System.out.println(<span class="string">"delay 3 seconds"</span>);</div><div class="line">	&#125;</div><div class="line">&#125;, <span class="number">3</span>, TimeUnit.SECONDS);</div></pre></td></tr></table></figure></p>
+<p><strong>周期执行</strong><br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">scheduledThreadPool.scheduleAtFixedRate(<span class="keyword">new</span> Runnable() &#123;</div><div class="line"></div><div class="line">	<span class="meta">@Override</span></div><div class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">		System.out.println(<span class="string">"delay 1 seconds, and excute every 3 seconds"</span>);</div><div class="line">	&#125;</div><div class="line">&#125;, <span class="number">1</span>, <span class="number">3</span>, TimeUnit.SECONDS);</div></pre></td></tr></table></figure></p>
+<p>这个程序的执行过程是延迟一秒后每三秒执行一次,scheduleThreadPool比timer要更加安全,功能更加强大</p>
+<p>###第四种 newSingThreadExecutor<br>创建一个单线程的线程池,保证所有的任务会按照FIFO\LIFO\优先级执行<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">ExecutorService singleThreadExecutor = Executors.newSingleThreadExecutor();</div><div class="line"><span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">10</span>; i++) &#123;</div><div class="line">	<span class="keyword">final</span> <span class="keyword">int</span> index = i;</div><div class="line">	singleThreadExecutor.execute(<span class="keyword">new</span> Runnable() &#123;</div><div class="line"></div><div class="line">		<span class="meta">@Override</span></div><div class="line">		<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">			<span class="keyword">try</span> &#123;</div><div class="line">				System.out.println(index);</div><div class="line">				Thread.sleep(<span class="number">2000</span>);</div><div class="line">			&#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</div><div class="line">				<span class="comment">// TODO Auto-generated catch block</span></div><div class="line">				e.printStackTrace();</div><div class="line">			&#125;</div><div class="line">		&#125;</div><div class="line">	&#125;);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>适合执行一些有时间要求的操作,比如数据库的操作</p>
+<p>##关于停止线程的一些操作(android)</p>
+<ul>
+<li>在Handler很简单,如果直接调用handler.removecallbacks(runnable)即可,例如在postdelay时间之内想停止post,则可以removecallbacks操作.</li>
+<li>Timer的终止操作. <br>(a)在如何想要终止的地方调用timer.cancel<br>(b)让timer线程成为daemon线程,只需要在创建额度时候(new Timer(true)),这样当程序中只有daemon线程的时候,它会自动终止.<br>(c)删除引用,也就是timer置为null<br>(d)放大招,System.exit方法,秒杀掉所有线程</li>
+<li>普通线程的停止<br>线程有一个弃用的方法stop,属于线程不安全的.所以很不建议使用,使用会出现各种各样的问题,后果自负哟.<br><em>方法一</em>那就是在run方法里自己添加一个成员变量呗,去检查,如果不符合退出循环呗(我们知道线程run结束后便会自行销毁的)<br><em>方法二</em>那就是对于一些阻塞的线程我们该怎么处理呢,比如socket.connect.read,这个时候我们就要用到<strong>Thread.interrupt</strong>,这个方法是安全的,这个只能将阻塞的线程唤醒,而非阻塞的是没有效果的,中断的时候会抛出一个异常(interrupetion),我们前边所说的socket.connection.read的阻塞就会接收这个异常,这个我们在run方法轮询的时候只需要<code>while(!this.isInterrupted())</code>,判断是interrupt状态之后直接退出就可以了</li>
+</ul>
+<p>Android在自己的API中加入了process类,killProcess(int pid),这其中的pid可以通过Process.mypid()获取,但是要注意这样终结的是整个程序!</p>
+<p>##关于线程中的局部变量</p>
+<p>局部变量存储在线程自己的栈中。也就是说，局部变量永远也不会被多个线程共享。所以，基础类型的局部变量是线程安全的。下面是基础类型的局部变量的一个例子：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">someMethod</span><span class="params">()</span></span>&#123;</div><div class="line"></div><div class="line">  <span class="keyword">long</span> threadSafeInt = <span class="number">0</span>;</div><div class="line"></div><div class="line">  threadSafeInt++;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p><strong>对象的局部引用和基础类型的局部变量不太一样</strong>。尽管引用本身没有被共享，但引用所指的对象并没有存储在线程的栈内。所有的对象都存在共享堆中。如果在某个方法中创建的对象不会逃逸出（译者注：即该对象不会被其它方法获得，也不会被非局部变量引用到）该方法，那么它就是线程安全的。实际上，哪怕将这个对象作为参数传给其它方法，只要别的线程获取不到这个对象，那它仍是线程安全的。下面是一个线程安全的局部引用样例：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">someMethod</span><span class="params">()</span></span>&#123;</div><div class="line"></div><div class="line">  LocalObject localObject = <span class="keyword">new</span> LocalObject();</div><div class="line"></div><div class="line">  localObject.callMethod();</div><div class="line">  method2(localObject);</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">method2</span><span class="params">(LocalObject localObject)</span></span>&#123;</div><div class="line">  localObject.setValue(<span class="string">"value"</span>);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>样例中 LocalObject 对象没有被方法返回，也没有被传递给 someMethod()方法外的对象。每个执行 someMethod()的线程都会创建自己的 LocalObject 对象，并赋值给 localObject 引用。因此，这里的 LocalObject 是线程安全的。事实上，整个 someMethod()都是线程安全的。即使将 LocalObject 作为参数传给同一个类的其它方法或其它类的方法时，它仍然是线程安全的。当然，如果 LocalObject 通过某些方法被传给了别的线程，那它就不再是线程安全的了。</p>
+<p><strong>对象成员</strong>存储在堆上。如果两个线程同时更新同一个对象的同一个成员，那这个代码就不是线程安全的。下面是一个样例：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">NotThreadSafe</span></span>&#123;</div><div class="line">    StringBuilder builder = <span class="keyword">new</span> StringBuilder();</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="title">add</span><span class="params">(String text)</span></span>&#123;</div><div class="line">        <span class="keyword">this</span>.builder.append(text);</div><div class="line">    &#125;    </div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>如果两个线程同时调用同一个 NotThreadSafe 实例上的 add()方法，就会有竞态条件问题。例如：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">NotThreadSafe sharedInstance = <span class="keyword">new</span> NotThreadSafe();</div><div class="line"></div><div class="line"><span class="keyword">new</span> Thread(<span class="keyword">new</span> MyRunnable(sharedInstance)).start();</div><div class="line"><span class="keyword">new</span> Thread(<span class="keyword">new</span> MyRunnable(sharedInstance)).start();</div><div class="line"></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyRunnable</span> <span class="keyword">implements</span> <span class="title">Runnable</span></span>&#123;</div><div class="line">  NotThreadSafe instance = <span class="keyword">null</span>;</div><div class="line"></div><div class="line">  <span class="function"><span class="keyword">public</span> <span class="title">MyRunnable</span><span class="params">(NotThreadSafe instance)</span></span>&#123;</div><div class="line">    <span class="keyword">this</span>.instance = instance;</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span></span>&#123;</div><div class="line">    <span class="keyword">this</span>.instance.add(<span class="string">"some text"</span>);</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>注意两个 MyRunnable 共享了同一个 NotThreadSafe 对象。因此，当它们调用 add()方法时会造成竞态条件。</p>
+<p>当然，如果这两个线程在不同的 NotThreadSafe 实例上调用 call()方法，就不会导致竞态条件。下面是稍微修改后的例子：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="keyword">new</span> Thread(<span class="keyword">new</span> MyRunnable(<span class="keyword">new</span> NotThreadSafe())).start();</div><div class="line"><span class="keyword">new</span> Thread(<span class="keyword">new</span> MyRunnable(<span class="keyword">new</span> NotThreadSafe())).start();</div></pre></td></tr></table></figure>
+<p>现在两个线程都有自己单独的 NotThreadSafe 对象，调用 add()方法时就会互不干扰，再也不会有竞态条件问题了。所以非线程安全的对象仍可以通过某种方式来消除竞态条件。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yunfengsa.github.io/2015/10/28/java-threadpool/" data-id="ciwemdoeb0005zsricckl31gn" class="article-share-link">Delen</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2015/10/28/android-xingnengyouhua-database/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Nieuwer</strong>
+      <div class="article-nav-title">
+        
+          android性能优化第二篇_浅谈数据库优化
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2015/10/28/android-xingnengyouhua/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Ouder</strong>
+      <div class="article-nav-title">Android_性能优化第一篇</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categorieën</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Chromium/">Chromium</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Database/">Database</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Markdown/">Markdown</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Ruby/">Ruby</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/android/">android</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/gradle/">gradle</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/ndk/">ndk</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/octopress/">octopress</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/opencv/">opencv</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/rails/">rails</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/ruby/">ruby</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/rx/">rx</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/weex/">weex</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/设计模式/">设计模式</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Labels</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/binder/">binder</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/surface/">surface</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/binder/" style="font-size: 10px;">binder</a> <a href="/tags/surface/" style="font-size: 10px;">surface</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archieven</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/12/">December 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">November 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/10/">October 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">May 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">April 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">January 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">December 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">November 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">October 2015</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recente berichten</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2016/12/07/hello-world/">Hello World</a>
+          </li>
+        
+          <li>
+            <a href="/2016/11/28/weex-and-vue-and-so-on/">开启Vue学习之旅</a>
+          </li>
+        
+          <li>
+            <a href="/2016/11/07/rx-to-retrofit-and-so-on/">Rx的进攻路线（选取比较好的文章）</a>
+          </li>
+        
+          <li>
+            <a href="/2016/11/06/find-a-way-to-gesturerecognization/">Find A Way to Gesture Recognization</a>
+          </li>
+        
+          <li>
+            <a href="/2016/11/02/camkeandopencv/">CMake编译NDK，以及在OpenCV中的应用</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2016 yunfengsa<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>

@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>深入理解系列：Binder | 云枫飒的笔记BLOG</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="科比退役，无所谓喜欢不喜欢，姑且一首歌，静静听：
+墙外视频">
+<meta property="og:type" content="article">
+<meta property="og:title" content="深入理解系列：Binder">
+<meta property="og:url" content="http://yunfengsa.github.io/2016/04/14/shenruandroid-binder/index.html">
+<meta property="og:site_name" content="云枫飒的笔记BLOG">
+<meta property="og:description" content="科比退役，无所谓喜欢不喜欢，姑且一首歌，静静听：
+墙外视频">
+<meta property="og:image" content="http://yunfengsa.github.io/images/binder/maidmediaserver.jpg">
+<meta property="og:image" content="http://yunfengsa.github.io/images/binder/iservicefamily.jpg">
+<meta property="og:image" content="http://yunfengsa.github.io/images/binder/servicemanager.jpg">
+<meta property="og:image" content="http://yunfengsa.github.io/images/binder/mediaplayer.JPG">
+<meta property="og:updated_time" content="2016-12-07T07:33:47.856Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="深入理解系列：Binder">
+<meta name="twitter:description" content="科比退役，无所谓喜欢不喜欢，姑且一首歌，静静听：
+墙外视频">
+<meta name="twitter:image" content="http://yunfengsa.github.io/images/binder/maidmediaserver.jpg">
+  
+    <link rel="alternate" href="/atom.xml" title="云枫飒的笔记BLOG" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">云枫飒的笔记BLOG</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">个人技术记录</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Zoeken"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yunfengsa.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-shenruandroid-binder" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/04/14/shenruandroid-binder/" class="article-date">
+  <time datetime="2016-04-14T05:24:54.000Z" itemprop="datePublished">2016-04-14</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/android/">android</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      深入理解系列：Binder
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>科比退役，无所谓喜欢不喜欢，姑且一首歌，静静听：</p>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/BZsXcc_tC-o" frameborder="0" allowfullscreen><br>墙外视频</iframe>
+
+<a id="more"></a>
+<p><a href="www.google.com"><h3>1.深入理解JNI</h3></a></p>
+<p><a href="http://yunfengsa.github.io/blog/2016/04/13/shenruandroid/"><h3>2.深入理解Zygote</h3></a></p>
+<p><a href="www.google.com"><h3>3.深入理解常见类（未完成）</h3></a></p>
+<p><a href="http://yunfengsa.github.io/blog/2016/04/14/shenruandroid-binder/"><h3>4.深入理解Binder</h3></a></p>
+<p><a href="www.google.com"><h3>5.深入理解Autdio（未完成）</h3></a></p>
+<p><a href="http://yunfengsa.github.io/blog/2016/04/22/shenruandroid-surface/"><h3>6.深入理解Surface</h3></a></p>
+<p>现在进入正题。。。</p>
+<p>##概述</p>
+<p>我们在分析zygote的时候，zygote进程间通信用的是socket，除此之外还有管道、信号、消息队列、共享内存、内存映射、信号量。而Binder是android更加灵活的通信方式。android可以说是一个基于Binder通信的C/S架构体系。</p>
+<p>##依然距离说明一切：MediaServer and MediaPlayerService：</p>
+<p>MediaServer包括的服务有：AudioFlinger（音频核心服务），AudioPolicyService（音频策略服务），MediaPlayerService（多媒体系统服务），CameraService（摄像/照相服务）。</p>
+<p>MS（MediaServer）是一个由c++实现的可执行程序，在网上找了一个源码解析:</p>
+<p><img src="/images/binder/maidmediaserver.jpg"></p> 
+
+<p><strong>获得一个ProcessState实例</strong></p>
+<ol>
+<li>Process：：self主要完成以下工作：1.打开dev/binder设备，这就相当于与内核的binder驱动有了一个交互通道</li>
+<li>Binder驱动分配一块内存来接收数据</li>
+<li>打开设备的过程每个进程只进行一次</li>
+</ol>
+<p><strong>defaultServiceManager：实际返回的是BpServiceManager</strong></p>
+<p>建立两个继承与IBinder的BpBinder和BBinder，其中就是客户端对应的是Bpbinder，用来与Server进行交互，而与Bpbinder（proxy）对应的就是BBinder，这两个是一一对应的。</p>
+<p>在defaultServiceManager（）中创建的的是Bpbinder，因为我们是ServiceManager的客户端。同时是通过handler来表示BBinder。</p>
+<p>那么系统是如何操作这俩binder的呢？答案是：IServiceManager，在其中会创建一个BpServiceManager，他的mRemote的值就是BpBinder，从而与其挂钩，这也就连接了Bpbinder和BBinder，而BnServiceManager从IServiceManager BBinder派生，则它可以直接参与binder通信,而其BnServiceManager是一个虚类，其业务需要子类实现，其强大的家族关系如下：<br>,</p>
+<p><img src="/images/binder/iservicefamily.jpg"></p> 
+
+<p><strong>注册MediaPlayerService</strong></p>
+<p>MediaPlayerService.cpp</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="keyword">void</span> MediaPlayerService::instantiate()&#123;</div><div class="line">defaultServiceManager-&gt;addService&#123;</div><div class="line">		String(<span class="string">"media.player"</span>),<span class="keyword">new</span> MediaPlayerService());</div><div class="line">&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>显然调用addService是一个业务层额度函数。</p>
+<p>通过defaultServiceManager获取BpServiceManager，通过remote获取BpBinder调用其transact，把通信给了Bpbinder。那么问题到底他们是怎么通信的呢？接下来进入通信层了，transact必然是大有所为了，详细代码就不展开，基本流程就是函数会有一个IPCThreadState函数，这个函数会在线程的线程本地存储空间（TLS）操作数据内容，这个空间是线程私有的，而每个IPCThreadState有一个<em>mIn（用来接收来自BInder设备的数据）、一个mOut（存储发往Binder设备数据）</em></p>
+<p><strong>通过mIn、mOut通信，然后开始startThreadPool()，然后joinThread</strong></p>
+<p>无非是新启动线程通过joinThreadPool读取binder设备，其实主线程也是调用了joinThreadPool读取binder设备，binder支持多线程操作。</p>
+<p>##前文中说过需要一个类来完成BnServiceManager功能：<strong>ServiceManager</strong></p>
+<pre>我们可以直接跳过以上封装通过此直接和binder打交道</pre>
+
+<p><img src="/images/binder/servicemanager.jpg"></p>
+
+<p>那ServiceManager存在有什么意义呢：</p>
+<ul>
+<li>管理服务，权限控制</li>
+<li>通过字符串查找service</li>
+<li>统一管理server，统一给client提供server的动向</li>
+</ul>
+<p>一个client如果想获得service信息，必须先和ServiceManager打交道，查询对应服务的信息，返回BpBinder，查询不到，则会等到，直到服务注册到ServiceManager中为止。通过interface_cast，将这个binder转换成BpXXXXService,然后进行相关操作。</p>
+<p>调用函数的基本流程就是将数据打包发送给BInder驱动，并由BpBinder中的handle值找到对应端的处理者来处理。在MediaPlayerService便会驻留在MediaServer进程中，这个进程有两个线程在talkwitheDriver，MediaPlayerService的继承关系：</p>
+<p><img src="/images/binder/mediaplayer.JPG"></p>
+
+<p>##到此，我们试着捋一下纯native的service实现</p>
+<ul>
+<li>假设我们的服务的名字叫Test，创建一个Test.cpp：1、defaultServiceManager。2、addService。3、startThreadPool。4、joinThreadPool。</li>
+<li>跨进程的C/S，本地需要一个BnTest，对端需要一个BpTest代理。</li>
+<li>然后需要实现BnTest和一个Bptest的实现</li>
+</ul>
+<p>##接下来就是我们关注的重点AIDL：</p>
+<p><strong>步骤1：</strong> 首先需要创建一个ITest.aidl</p>
+<p>ITest.aidl</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="keyword">package</span> com.test.service</div><div class="line"><span class="keyword">import</span> com.test.complicateDataStrcture</div><div class="line"></div><div class="line"><span class="class"><span class="keyword">interface</span> <span class="title">ITest</span></span>&#123;</div><div class="line"></div><div class="line">	<span class="function"><span class="keyword">int</span> <span class="title">getTest</span><span class="params">(out compicateDataStructure)</span></span>;  <span class="comment">//注意没有修饰符，in表示输入参数，out表示输出参数</span></div><div class="line">	<span class="function"><span class="keyword">int</span> <span class="title">setTest</span><span class="params">(in String name,in <span class="keyword">boolean</span> reStartServer)</span></span>;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这个时候编译器会生成一个com.test.ITest.java</p>
+<p><strong>步骤2：</strong>实现服务端，从ITest.Stub派生</p>
+<p>上文生成的ITest.java只是实现了类似BnTest的一个东西，业务的实现需要从ITest.Stub派生</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">ITestImpl</span> <span class="keyword">extends</span> <span class="title">ITest</span>.<span class="title">Stub</span></span>&#123;</div><div class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">getTest</span><span class="params">(complicateDAtaStructure csd)</span> <span class="keyword">throws</span> RmoteException</span>&#123;</div><div class="line">		<span class="comment">//实现具体内容</span></div><div class="line">&#125;</div><div class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setTest</span><span class="params">(in String name,in <span class="keyword">boolean</span> reStartServer)</span> <span class="keyword">throws</span> RemoteExcetion</span>&#123;</div><div class="line">		<span class="comment">//实现具体内容</span></div><div class="line">&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这个时候aidl工具会自动生成： src下生成com.test.service包结构目录；gen下也有一个com.test.service包结构</p>
+<p><strong>步骤3：</strong>实现代理端，另起一个应用程序</p>
+<p>把步骤2生成的gen下的com.test.service复制到com.test.client中。服务端一般驻留在Service进程，所以可以在Client端的onServiceConnected函数中获得代理对象。</p>
+<p>Client端</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="keyword">private</span> ServiceConnection serviceConnection = <span class="keyword">new</span> ServiceConnection()&#123;</div><div class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onServiceConncted</span><span class="params">(ComponentName name,IBinder service)</span></span>&#123;</div><div class="line">		ITestProxy=ITest.Stub.asInterface(service);<span class="comment">//得到BpTest</span></div><div class="line">&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这样便支持简单的数据结构与java中的String类型的数据进行跨进程传递，实现复杂的数据结构的传递，还需要</p>
+<ul>
+<li>比如文中的complicatedDataStructure，它必须实现implements Parcelable接口。</li>
+<li>内部必须有一个静态的CREATOR类。</li>
+<li>定义一个complicatedDataStructure.aidl</li>
+</ul>
+<p>继承Pacelable接口的写法省略；</p>
+<p>complicatedDataStructure.aidl</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="keyword">package</span> com.test.sercie;</div><div class="line">parcelable complicatedDataStructure</div></pre></td></tr></table></figure>
+<p>在使用它的aidl文件中导入即可。</p>
+<p>这篇文章由于个人能力有限，主要是一个捋清思路而已，详细的android6.0源码分析，<a href="http://gityuan.com/columns/" target="_blank" rel="external">入口</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yunfengsa.github.io/2016/04/14/shenruandroid-binder/" data-id="ciwemdofm0019zsriddxwgo4e" class="article-share-link">Delen</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/binder/">binder</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2016/04/16/shejimoshi/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Nieuwer</strong>
+      <div class="article-nav-title">
+        
+          设计模式
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2016/04/13/shenruandroid/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Ouder</strong>
+      <div class="article-nav-title">深入理解系列：zygote</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categorieën</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Chromium/">Chromium</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Database/">Database</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Markdown/">Markdown</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Ruby/">Ruby</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/android/">android</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/gradle/">gradle</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/ndk/">ndk</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/octopress/">octopress</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/opencv/">opencv</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/rails/">rails</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/ruby/">ruby</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/rx/">rx</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/weex/">weex</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/设计模式/">设计模式</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Labels</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/binder/">binder</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/surface/">surface</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/binder/" style="font-size: 10px;">binder</a> <a href="/tags/surface/" style="font-size: 10px;">surface</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archieven</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/12/">December 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">November 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/10/">October 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">May 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">April 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">January 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">December 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">November 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">October 2015</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recente berichten</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2016/12/07/hello-world/">Hello World</a>
+          </li>
+        
+          <li>
+            <a href="/2016/11/28/weex-and-vue-and-so-on/">开启Vue学习之旅</a>
+          </li>
+        
+          <li>
+            <a href="/2016/11/07/rx-to-retrofit-and-so-on/">Rx的进攻路线（选取比较好的文章）</a>
+          </li>
+        
+          <li>
+            <a href="/2016/11/06/find-a-way-to-gesturerecognization/">Find A Way to Gesture Recognization</a>
+          </li>
+        
+          <li>
+            <a href="/2016/11/02/camkeandopencv/">CMake编译NDK，以及在OpenCV中的应用</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2016 yunfengsa<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>

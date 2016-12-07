@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Android_性能优化第一篇 | 云枫飒的笔记BLOG</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="1. 基本调试工具调试工具有Traceview;使用方法:在需要调优的activity.oncreate函数添加android.os.debug.startMethodTracing(&amp;quot;test&amp;quot;);在ondestroy的函数添加andorid.os.debug.stopMethodTracing();在内存卡根目录中会生成相应的test.trace的文件,这时候在sdk to">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android_性能优化第一篇">
+<meta property="og:url" content="http://yunfengsa.github.io/2015/10/28/android-xingnengyouhua/index.html">
+<meta property="og:site_name" content="云枫飒的笔记BLOG">
+<meta property="og:description" content="1. 基本调试工具调试工具有Traceview;使用方法:在需要调优的activity.oncreate函数添加android.os.debug.startMethodTracing(&amp;quot;test&amp;quot;);在ondestroy的函数添加andorid.os.debug.stopMethodTracing();在内存卡根目录中会生成相应的test.trace的文件,这时候在sdk to">
+<meta property="og:updated_time" content="2016-12-07T07:33:47.856Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android_性能优化第一篇">
+<meta name="twitter:description" content="1. 基本调试工具调试工具有Traceview;使用方法:在需要调优的activity.oncreate函数添加android.os.debug.startMethodTracing(&amp;quot;test&amp;quot;);在ondestroy的函数添加andorid.os.debug.stopMethodTracing();在内存卡根目录中会生成相应的test.trace的文件,这时候在sdk to">
+  
+    <link rel="alternate" href="/atom.xml" title="云枫飒的笔记BLOG" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">云枫飒的笔记BLOG</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">个人技术记录</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Zoeken"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yunfengsa.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-android-xingnengyouhua" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/10/28/android-xingnengyouhua/" class="article-date">
+  <time datetime="2015-10-28T13:01:21.000Z" itemprop="datePublished">2015-10-28</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/android/">android</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Android_性能优化第一篇
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="1-基本调试工具"><a href="#1-基本调试工具" class="headerlink" title="1. 基本调试工具"></a>1. 基本调试工具</h2><p>调试工具有Traceview;使用方法:在需要调优的activity.oncreate函数添加<code>android.os.debug.startMethodTracing(&quot;test&quot;);</code><br>在ondestroy的函数添加<br><code>andorid.os.debug.stopMethodTracing();</code><br>在内存卡根目录中会生成相应的test.trace的文件,这时候在sdk tools中运行traceview.bat运行相应的trace文件就可以看到分析界面</p>
+<h2 id="2-基本的优化点-主要在于思路的整理"><a href="#2-基本的优化点-主要在于思路的整理" class="headerlink" title="2. 基本的优化点(主要在于思路的整理)"></a>2. 基本的优化点(主要在于思路的整理)</h2><p><strong>1.同步改异步</strong><br>主要的是注意线程的有效管理,以及注意service和线程的选择.</p>
+<p><strong>2.缓存</strong><br>缓存是一个比较负载的过程,过多的资源的分配会导致频繁的gc会影响系统响应.减少对象创建的主要方法有<em>单例模式,缓存</em><br><br>(1)单例模式<br><br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Singleton</span> </span>&#123;</div><div class="line">    <span class="keyword">private</span> <span class="keyword">static</span>  Singleton instance = <span class="keyword">null</span>;</div><div class="line">    <span class="function"><span class="keyword">private</span> <span class="title">Singleton</span><span class="params">()</span></span>&#123;</div><div class="line">    &#125;</div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">synchronized</span> Singleton <span class="title">getInstance</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">if</span> (instance == <span class="keyword">null</span>) &#123;</div><div class="line">            <span class="keyword">synchronized</span> (obj) &#123;</div><div class="line">                <span class="keyword">if</span> (instance == <span class="keyword">null</span>) &#123;</div><div class="line">                    instance = <span class="keyword">new</span> Singleton();</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">return</span> instance;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>(2)缓存<br><br>主要是图片缓存,线程池缓存,连接池缓存,view缓存(典型的convertview的复用),io缓存(iobuffer的使用),消息缓存(obtainmessage的复用)<br><strong>Layout优化</strong><br>减少view的挂载点,典型的是使用布局标签(include,viewstub,merge)等等<br><strong>数据库优化</strong><br><strong>算法优化</strong><br>比如linkeslist arraylist比较  以及hashmap和arraylist 的差距等(hashmap的时间复杂度要低的多)</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yunfengsa.github.io/2015/10/28/android-xingnengyouhua/" data-id="ciwemdodv0001zsri1ptpj215" class="article-share-link">Delen</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2015/10/28/java-threadpool/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Nieuwer</strong>
+      <div class="article-nav-title">
+        
+          浅谈java线程池
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2015/10/28/octo-setting/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Ouder</strong>
+      <div class="article-nav-title">octopress个性化配置</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categorieën</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Chromium/">Chromium</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Database/">Database</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Markdown/">Markdown</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Ruby/">Ruby</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/android/">android</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/gradle/">gradle</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/ndk/">ndk</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/octopress/">octopress</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/opencv/">opencv</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/rails/">rails</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/ruby/">ruby</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/rx/">rx</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/weex/">weex</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/设计模式/">设计模式</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Labels</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/binder/">binder</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/surface/">surface</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/binder/" style="font-size: 10px;">binder</a> <a href="/tags/surface/" style="font-size: 10px;">surface</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archieven</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/12/">December 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">November 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/10/">October 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">May 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">April 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">January 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">December 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">November 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">October 2015</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recente berichten</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2016/12/07/hello-world/">Hello World</a>
+          </li>
+        
+          <li>
+            <a href="/2016/11/28/weex-and-vue-and-so-on/">开启Vue学习之旅</a>
+          </li>
+        
+          <li>
+            <a href="/2016/11/07/rx-to-retrofit-and-so-on/">Rx的进攻路线（选取比较好的文章）</a>
+          </li>
+        
+          <li>
+            <a href="/2016/11/06/find-a-way-to-gesturerecognization/">Find A Way to Gesture Recognization</a>
+          </li>
+        
+          <li>
+            <a href="/2016/11/02/camkeandopencv/">CMake编译NDK，以及在OpenCV中的应用</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2016 yunfengsa<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>

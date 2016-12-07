@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Okhttp，不可不深入（封装、https、源码分析） | 云枫飒的笔记BLOG</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="前一段有一个项目，牵扯到循环更新的问题，关于网络的框架当时只是简单的封装了httpClient，由于担心连接池污染问题，甚至直接关闭了连接池复用。最近有点时间，整理一下Okhttp。
+网上有那么多网络框架，为什么okhttp这么受宠，那必然这货真是个金子啊！
+
+支持SPDY,在手淘的521计划中，也提到了SPDY能够提高访问速度的特性。
+使用GZIP压缩下载内容
+利用响应缓存避免重复的网络请求。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Okhttp，不可不深入（封装、https、源码分析）">
+<meta property="og:url" content="http://yunfengsa.github.io/2016/01/07/okhttp/index.html">
+<meta property="og:site_name" content="云枫飒的笔记BLOG">
+<meta property="og:description" content="前一段有一个项目，牵扯到循环更新的问题，关于网络的框架当时只是简单的封装了httpClient，由于担心连接池污染问题，甚至直接关闭了连接池复用。最近有点时间，整理一下Okhttp。
+网上有那么多网络框架，为什么okhttp这么受宠，那必然这货真是个金子啊！
+
+支持SPDY,在手淘的521计划中，也提到了SPDY能够提高访问速度的特性。
+使用GZIP压缩下载内容
+利用响应缓存避免重复的网络请求。">
+<meta property="og:updated_time" content="2016-12-07T07:33:47.856Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Okhttp，不可不深入（封装、https、源码分析）">
+<meta name="twitter:description" content="前一段有一个项目，牵扯到循环更新的问题，关于网络的框架当时只是简单的封装了httpClient，由于担心连接池污染问题，甚至直接关闭了连接池复用。最近有点时间，整理一下Okhttp。
+网上有那么多网络框架，为什么okhttp这么受宠，那必然这货真是个金子啊！
+
+支持SPDY,在手淘的521计划中，也提到了SPDY能够提高访问速度的特性。
+使用GZIP压缩下载内容
+利用响应缓存避免重复的网络请求。">
+  
+    <link rel="alternate" href="/atom.xml" title="云枫飒的笔记BLOG" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">云枫飒的笔记BLOG</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">个人技术记录</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Zoeken"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yunfengsa.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-okhttp" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/01/07/okhttp/" class="article-date">
+  <time datetime="2016-01-07T05:13:42.000Z" itemprop="datePublished">2016-01-07</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/android/">android</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Okhttp，不可不深入（封装、https、源码分析）
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>前一段有一个项目，牵扯到循环更新的问题，关于网络的框架当时只是简单的封装了httpClient，由于担心连接池污染问题，甚至直接关闭了连接池复用。最近有点时间，整理一下<a href="http://square.github.io/okhttp/" target="_blank" rel="external">Okhttp</a>。</p>
+<p>网上有那么多网络框架，为什么okhttp这么受宠，那必然这货真是个金子啊！</p>
+<ul>
+<li>支持<a href="https://zh.wikipedia.org/wiki/SPDY" target="_blank" rel="external">SPDY</a>,在手淘的521计划中，也提到了SPDY能够提高访问速度的特性。</li>
+<li>使用GZIP压缩下载内容</li>
+<li>利用响应缓存避免重复的网络请求。</li>
+<li>网络出现问题的时候，okhttp依然有效，它将从常见的问题中恢复。</li>
+<li>当有多个IP的时候，第一个连接失败的时候，Okhttp会尝试其他的地址，这对多数据中心的服务大有裨益啊。<a id="more"></a>
+</li>
+</ul>
+<h4 id="Okhttp的缓存"><a href="#Okhttp的缓存" class="headerlink" title="Okhttp的缓存"></a>Okhttp的缓存</h4><p>okhttp本身就有缓存的功能，是不是很dia..，需要自己设置<br><code>client.setCache(new Cache(context.getCacheDir(),maxCacheSize));</code>,设置缓存目录和缓存大小，okhttp内部是使用LRU来管理缓存的。</p>
+<p>####过期时间</p>
+<p>有了缓存，则需要有过期控制，缓存是由HTTP消息头中的”Cache-control”来控制，常见的取值有private、no-cache、max-age、must-revalidate等，默认为private。 </p>
+<ul>
+<li>public:所有内容被缓存</li>
+<li>private：内容之缓存到私有缓存中</li>
+<li>no-cache：所有内容不会被缓存</li>
+<li>no-store：所有内容不会被缓存到缓存或Internet临时文件中</li>
+<li>must-revalidation/proxy-revalidation：如果缓存的内容失败，请求必须发送到服务器/代理进行重新验证</li>
+<li>max-age=xxx(xxx is numeric) 缓存的内容将在 xxx 秒后失效, 这个选项只在HTTP 1.1可用, 并如果和Last-Modified一起使用时, 优先级较高</li>
+</ul>
+<p>Okhtp提供了一个拦截器，无非就是在http请求发送之前，拦截下来，做一些处理再发送，我们可以在拦截器里对Cache-control：maxage=36000添加到请求里去。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">Interceptor cacheInterceptor = <span class="keyword">new</span> Interceptor() &#123;</div><div class="line">    <span class="meta">@Override</span> <span class="function"><span class="keyword">public</span> Response <span class="title">intercept</span><span class="params">(Chain chain)</span> <span class="keyword">throws</span> IOException </span>&#123;</div><div class="line">        Response originalResponse = chain.proceed(chain.request());</div><div class="line">                        <span class="keyword">return</span> originalResponse.newBuilder()</div><div class="line">                .removeHeader(<span class="string">"Pragma"</span>)<span class="comment">//Pragma:no-cache。在HTTP/1.1协议中，它的含义和Cache-Control:no-cache相同。为了确保缓存生效</span></div><div class="line">                .header(<span class="string">"Cache-Control"</span>, String.format(<span class="string">"max-age=%d"</span>, maxCacheAge))<span class="comment">//添加缓存请求头</span></div><div class="line">                .build();</div><div class="line">    &#125;</div><div class="line">&#125;;</div></pre></td></tr></table></figure>
+<p>####调用OkHttp方法，实现封装。</p>
+<p><code>Request.Builder requestBuilder = new Request.Builder().url(url).cacheControl(cacheControl);</code></p>
+<p>一个OkHttp的请求大致是这样子的，url是必须的，然后如果我们要实现缓存，cacheControl也是必须的，OkHttp提供了CacheControl这个类，里面FORCE_CACHE 和FORCE_NETWORK分别表示只从缓存获取数据和只通过网络请求获取数据，有了前面的两步设置，这时我们是可以通过设置FORCE_CACHE 来从缓存获取数据而不通过网络获取服务器的数据的（前提是你本地要有缓存，也就是必须先通过网络请求获取到一次数据才能获取到缓存），代码没什么，就不贴了。</p>
+<p>嗯，我们的网络请求实现本地缓存已经实现，当你网络请求失败的时候又不希望展示给用户的是一片空白，那你就可以调用本地之前的缓存了！！你别告诉我这样你就满足了，这每次都要判断是不是请求失败了，要不要请求缓存，这想想都蛋疼啊！！！</p>
+<p>所以我对OkHttp进行封装，实现了只查询缓存，网络请求失败自动查询本地缓存等功能<br>支持4种不同的查询方式</p>
+<ul>
+<li><p>ONLY_NETWORK  只查询网络数据</p>
+</li>
+<li><p>ONLY_CACHED   只查询本地缓存</p>
+</li>
+<li><p>CACHED_ELSE_NETWORK  先查询本地缓存，如果本地没有，再查询网络数据</p>
+</li>
+<li><p>NETWORK_ELSE_CACHED  先查询网络数据，如果没有，再查询本地缓存</p>
+</li>
+</ul>
+<p>代码：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"> <span class="comment">//实现一个最基本的请求方法</span></div><div class="line"><span class="function"><span class="keyword">private</span> Call <span class="title">request</span><span class="params">(Request request, Callback callback)</span></span>&#123;</div><div class="line">    <span class="keyword">if</span>(DEBUG)&#123;</div><div class="line">        Log.d(<span class="string">"OKHttp"</span>,request.toString());</div><div class="line">    &#125;</div><div class="line">    Call call = client.newCall(request);</div><div class="line">    call.enqueue(callback);</div><div class="line">    <span class="keyword">return</span> call;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">//实现自己的回调，添加了onStart和onFinish方法</span></div><div class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">Callback</span> <span class="keyword">implements</span> <span class="title">com</span>.<span class="title">squareup</span>.<span class="title">okhttp</span>.<span class="title">Callback</span> </span>&#123;</div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onStart</span><span class="params">()</span></span>&#123;</div><div class="line"> </div><div class="line">    &#125;    </div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onFinish</span><span class="params">()</span></span>&#123;</div><div class="line"> </div><div class="line">    &#125;</div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title">onFailure</span><span class="params">(Request request, IOException e)</span></span>;</div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title">onResponse</span><span class="params">(Response response)</span> <span class="keyword">throws</span> IOException</span>;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">//定义一个公用的方法，实现最基本的封装，无论是post还是get都适用</span></div><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">request</span><span class="params">(String url, String method, RequestBody requestBody, <span class="keyword">final</span> CacheControl cacheControl, Headers headers,Object tag ,<span class="keyword">final</span> Callback callback)</span></span>&#123;</div><div class="line">    <span class="keyword">final</span> Request.Builder requestBuilder = <span class="keyword">new</span> Request.Builder().url(url).cacheControl(cacheControl);</div><div class="line">    <span class="keyword">if</span>(headers!=<span class="keyword">null</span>)&#123;</div><div class="line">        requestBuilder.headers(headers);</div><div class="line">    &#125;</div><div class="line">    requestBuilder.method(method,requestBody);<span class="comment">//如果是get请求，这里requestBody就应该传个null</span></div><div class="line">    requestBuilder.tag(tag==<span class="keyword">null</span>?url:tag);<span class="comment">//OkHttp的tag是对请求的标志，可以通过tag来获取到请求和取消请求，这里如果你不传，就将当前url设置为tag </span></div><div class="line">    <span class="keyword">final</span> Request request = requestBuilder.build();</div><div class="line">    request(request,<span class="keyword">new</span> Callback() &#123;</div><div class="line">        <span class="comment">//这里是回调</span></div><div class="line">        <span class="meta">@Override</span></div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onStart</span><span class="params">()</span> </span>&#123;</div><div class="line">            <span class="keyword">if</span>(callback!=<span class="keyword">null</span>)&#123;</div><div class="line">                    callback.onStart();</div><div class="line">                &#125;</div><div class="line">        &#125;  </div><div class="line">        <span class="meta">@Override</span>            </div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onFinish</span><span class="params">()</span> </span>&#123;                </div><div class="line">        <span class="keyword">if</span>(callback!=<span class="keyword">null</span>)&#123;</div><div class="line">                callback.onFinish();</div><div class="line">            &#125;</div><div class="line">        &#125;            </div><div class="line">        <span class="meta">@Override</span>            </div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onFailure</span><span class="params">(Request request, IOException e)</span> </span>&#123;                </div><div class="line">        <span class="keyword">if</span>(callback!=<span class="keyword">null</span>)&#123;</div><div class="line">                callback.onFailure(request,e);</div><div class="line">                callback.onFinish();</div><div class="line">            &#125;</div><div class="line">        &#125;            </div><div class="line">        <span class="meta">@Override</span>            </div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onResponse</span><span class="params">(Response response)</span> <span class="keyword">throws</span> IOException </span>&#123;                </div><div class="line">            <span class="keyword">if</span>(response.code()==<span class="number">504</span>)&#123;</div><div class="line">                <span class="comment">//OkHttp如果缓存请求不到是会报504的                    </span></div><div class="line">                <span class="keyword">if</span>(CacheControl.FORCE_CACHE == cacheControl)&#123;                        </div><div class="line">                    <span class="keyword">if</span>(callback!=<span class="keyword">null</span>)&#123;</div><div class="line">                        callback.onFailure(request,<span class="keyword">new</span> IOException(<span class="string">"cached not found"</span>));</div><div class="line">                        callback.onFinish();</div><div class="line">                    &#125;                        </div><div class="line">                    <span class="keyword">return</span>;</div><div class="line">                &#125;</div><div class="line">            &#125;                </div><div class="line">            <span class="keyword">if</span>(callback!=<span class="keyword">null</span>)&#123;</div><div class="line">                callback.onResponse(response);</div><div class="line">                callback.onFinish();</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="comment">//实现只请求网络和只请求缓存的方法 </span></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">requestFromNetwork</span><span class="params">(<span class="keyword">final</span> String url,String method,RequestBody requestBody, Headers headers,Object tag,<span class="keyword">final</span> Callback callback)</span></span>&#123;</div><div class="line">        request(url,method,requestBody,CacheControl.FORCE_NETWORK,headers,tag,callback);</div><div class="line">&#125;    </div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">requestFromCached</span><span class="params">(String url,String method,RequestBody requestBody,Headers headers ,Object tag,<span class="keyword">final</span> Callback callback)</span></span>&#123;</div><div class="line">       </div><div class="line">   request(url,method,requestBody,CacheControl.FORCE_CACHE,headers,tag,callback);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>CACHED_ELSE_NETWORK  先查询本地缓存，如果本地没有，再查询网络数据，我们就需要自己再传一个Callback  c2回调了，当回调执行成功的时候，我们直接就调用方法的回调的onResponse就行，其余情况我们就需要查询网络的数据，到了这一步，说明本地没有缓存了，所以直接调用requestFromNetwork就行</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">request</span><span class="params">(<span class="keyword">final</span> String url,<span class="keyword">final</span> CacheType cacheType,<span class="keyword">final</span> String method,<span class="keyword">final</span> RequestBody requestBody,<span class="keyword">final</span> Headers headers,<span class="keyword">final</span> Object tag,<span class="keyword">final</span> Callback callback)</span></span>&#123;</div><div class="line">    <span class="keyword">if</span>(callback!=<span class="keyword">null</span>)</div><div class="line">    callback.onStart();</div><div class="line">    <span class="keyword">switch</span>(cacheType)&#123;</div><div class="line">        <span class="keyword">case</span> ONLY_NETWORK:<span class="comment">//只查询网络数据</span></div><div class="line">            requestFromNetwork(url,method,requestBody,headers,tag,callback);</div><div class="line">            <span class="keyword">break</span>;</div><div class="line">        <span class="keyword">case</span> ONLY_CACHED:<span class="comment">//只查询本地缓存</span></div><div class="line">            requestFromCached(url,method,requestBody,headers,tag,callback);</div><div class="line">            <span class="keyword">break</span>;</div><div class="line">        <span class="keyword">case</span> CACHED_ELSE_NETWORK:</div><div class="line">            requestFromCached(url,method,requestBody,headers,tag,<span class="keyword">new</span> Callback()&#123;</div><div class="line">                <span class="meta">@Override</span> </div><div class="line">                <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onStart</span><span class="params">()</span></span>&#123;</div><div class="line">                    <span class="keyword">if</span>(callback!=<span class="keyword">null</span>)&#123;</div><div class="line">                        callback.onStart();</div><div class="line">                    &#125;</div><div class="line">                &#125;</div><div class="line">                <span class="meta">@Override</span> <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onFinish</span><span class="params">()</span></span>&#123;</div><div class="line">                    <span class="keyword">if</span>(callback!=<span class="keyword">null</span>)&#123;</div><div class="line">                        callback.onFinish();</div><div class="line">                    &#125;</div><div class="line">                &#125;</div><div class="line">                <span class="meta">@Override</span> </div><div class="line">                <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onFailure</span><span class="params">(Request request,IOException e)</span></span>&#123;</div><div class="line">                    requestFromNetwork(url,method,requestBody,headers,tag,callback);</div><div class="line">                &#125;</div><div class="line">                <span class="meta">@Override</span> <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onResponse</span><span class="params">(Response response)</span><span class="keyword">throws</span> IOException</span>&#123;</div><div class="line">                    <span class="keyword">if</span>(response.code()==<span class="number">200</span>)&#123;</div><div class="line">                        <span class="comment">//response.isSuccessful()OkHttp是有这个方法判断请求是否成功的，但判断的方法是根据状态码是否是20开头（200，201，202，203等，具体区别就不在这里描述了，有兴趣的百度）来判断的，但只有200返回的数据才是我们想要的                            </span></div><div class="line">                        <span class="keyword">if</span>(callback!=<span class="keyword">null</span>)&#123;</div><div class="line">                            callback.onResponse(response);</div><div class="line">                            callback.onFinish();</div><div class="line">                        &#125;</div><div class="line">                    &#125;<span class="keyword">else</span>&#123;</div><div class="line">                        requestFromNetwork(url,method,requestBody,headers,tag,callback);</div><div class="line">                    &#125;</div><div class="line">                &#125;</div><div class="line">             &#125;);</div><div class="line">             <span class="keyword">break</span>;</div><div class="line">         <span class="keyword">case</span> NETWORK_ELSE_CACHED:</div><div class="line">            requestFromNetwork(url,method,requestBody,headers,tag,<span class="keyword">new</span> Callback()&#123;</div><div class="line">                <span class="meta">@Override</span> <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onStart</span><span class="params">()</span></span>&#123;</div><div class="line">                    <span class="keyword">if</span>(callback!=<span class="keyword">null</span>)&#123;</div><div class="line">                        callback.onStart();</div><div class="line">                    &#125;</div><div class="line">                &#125;</div><div class="line">                <span class="meta">@Override</span> <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onFinish</span><span class="params">()</span></span>&#123;</div><div class="line">                    <span class="keyword">if</span>(callback!=<span class="keyword">null</span>)&#123;</div><div class="line">                    callback.onFinish();</div><div class="line">                    &#125;</div><div class="line">                 &#125;</div><div class="line">                <span class="meta">@Override</span> <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onFailure</span><span class="params">(Request request,IOException e)</span></span>&#123;</div><div class="line">                    requestFromCached(url,method,requestBody,headers,tag,callback);</div><div class="line">                &#125;</div><div class="line">                <span class="meta">@Override</span> <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onResponse</span><span class="params">(Response response)</span><span class="keyword">throws</span> IOException</span>&#123;</div><div class="line">                    <span class="keyword">if</span>(response.code()==<span class="number">200</span>)&#123;</div><div class="line">                        <span class="keyword">if</span>(callback!=<span class="keyword">null</span>)&#123;</div><div class="line">                            callback.onResponse(response);</div><div class="line">                            callback.onFinish();</div><div class="line">                        &#125;</div><div class="line">                    &#125; <span class="keyword">else</span>&#123;</div><div class="line">                            requestFromCached(url,method,requestBody,headers,tag,callback);</div><div class="line">                    &#125;</div><div class="line">                &#125;</div><div class="line">            &#125;);</div><div class="line">            <span class="keyword">break</span>;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>NETWORK_ELSE_CACHED  这个和CACHED_ELSE_NETWORK 实现原理是一样的，就略过。</p>
+<p>####添加Gson</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">JsonCallback</span>&lt;<span class="title">T</span>&gt; </span>&#123;</div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title">onFailure</span><span class="params">(Request request, Exception e)</span></span>;    </div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title">onResponse</span><span class="params">(T object)</span> <span class="keyword">throws</span> IOException</span>;    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onStart</span><span class="params">()</span></span>&#123;</div><div class="line"> </div><div class="line">    &#125;    </div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onFinish</span><span class="params">()</span></span>&#123;</div><div class="line"> </div><div class="line">    &#125;</div><div class="line">    <span class="comment">//这个才是重点，获取Json的类型，因为数据可能集合也可能是Object</span></div><div class="line">    <span class="function">Type <span class="title">getType</span><span class="params">()</span></span>&#123;</div><div class="line">        Type type = ((ParameterizedType)getClass().getGenericSuperclass()).getActualTypeArguments()[<span class="number">0</span>];        </div><div class="line">        <span class="keyword">if</span>(type <span class="keyword">instanceof</span> Class)&#123;            </div><div class="line">            <span class="keyword">return</span> type;<span class="comment">//如果是Object直接返回</span></div><div class="line">        &#125;<span class="keyword">else</span>&#123;            </div><div class="line">            <span class="keyword">return</span> <span class="keyword">new</span> TypeToken&lt;T&gt;()&#123;&#125;.getType();<span class="comment">//如果是集合，获取集合的类型map或list</span></div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">/这里只贴部分关键代码 </div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">request</span><span class="params">(<span class="keyword">final</span> String url, <span class="keyword">final</span> CacheType cacheType, <span class="keyword">final</span> String method, <span class="keyword">final</span> RequestBody requestBody, <span class="keyword">final</span> Headers headers,Object tag,<span class="keyword">final</span> JsonCallback callback)</span></span></div><div class="line"> </div><div class="line"><span class="comment">//在onResponse进行解析，具体看文章结尾源码</span></div><div class="line">@Override</div><div class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onResponse</span><span class="params">(Response response)</span> <span class="keyword">throws</span> IOException &#123;     </div><div class="line">    <span class="keyword">if</span>(response.isSuccessful() &amp;&amp; callback!=<span class="keyword">null</span>)&#123;</div><div class="line">        String jsonString = response.body().string();;         </div><div class="line">        <span class="keyword">if</span>(!TextUtils.isEmpty(jsonString))&#123;</div><div class="line">            Object result = <span class="keyword">null</span>;             </div><div class="line">            <span class="keyword">try</span> &#123;</div><div class="line">                 result =  gson.fromJson(jsonString,callback.getType());<span class="comment">//直接调用Gson解析</span></div><div class="line">                 callback.onResponse(result);</div><div class="line">                 callback.onFinish();</div><div class="line">            &#125; <span class="keyword">catch</span> (JsonSyntaxException e) &#123;</div><div class="line">                 callback.onFailure(<span class="keyword">null</span>,<span class="keyword">new</span> Exception(<span class="string">"json string parse error :"</span>+e.toString()));</div><div class="line">                 callback.onFinish();</div><div class="line">                 e.printStackTrace();</div><div class="line">            &#125;</div><div class="line"> </div><div class="line">         &#125;<span class="keyword">else</span>&#123;</div><div class="line">             callback.onFailure(<span class="keyword">null</span>,<span class="keyword">new</span> Exception(<span class="string">"json string may be null"</span>));</div><div class="line">             callback.onFinish();</div><div class="line">         &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>##既然说到okhttp，那就了解一下https和它的关系吧</p>
+<p>默认情况下okhttp是支持https网站的，一般情况下https都是CA机构颁发的证书，默认是可以信任的。</p>
+<p><strong>那自签名网站该如何呢，比如大名鼎鼎的<a href="www.12306.cn">12306</a></strong></p>
+<p>这一部分大概说一下：</p>
+<ul>
+<li>https的一些相关知识</li>
+<li>okhttp访问自签名https网站</li>
+</ul>
+<p>####https相关知识</p>
+<p>HTTPS在传输数据之前需要客户端（浏览器）与服务端（网站）之间进行一次握手，在握手过程中将确立双方加密传输数据的密码信息.</p>
+<p>基本过程：</p>
+<ol>
+<li><p>浏览器将自己支持的一套加密算法、HASH算法发送给网站。</p>
+</li>
+<li><p>网站从中选出一组加密算法与HASH算法，并将自己的身份信息以证书的形式发回给浏览器。证书里面包含了网站地址，加密公钥，以及证书的颁发机构等信息。</p>
+</li>
+<li><p>浏览器获得网站证书之后，开始验证证书的合法性，如果证书信任，则生成一串随机数字作为通讯过程中对称加密的秘钥。然后取出证书中的公钥，将这串数字以及HASH的结果进行加密，然后发给网站。</p>
+</li>
+<li><p>网站接收浏览器发来的数据之后，通过私钥进行解密，然后HASH校验，如果一致，则使用浏览器发来的数字串使加密一段握手消息发给浏览器。</p>
+</li>
+<li><p>浏览器解密，并HASH校验，没有问题，则握手结束。接下来的传输过程将由之前浏览器生成的随机密码并利用对称加密算法进行加密。</p>
+</li>
+</ol>
+<p>####访问自签名网站</p>
+<p>首先需要导出网站的证书，放到assets文件夹下</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setCertificates</span><span class="params">(InputStream... certificates)</span></span></div><div class="line">&#123;</div><div class="line">    <span class="keyword">try</span></div><div class="line">    &#123;</div><div class="line">        CertificateFactory certificateFactory = CertificateFactory.getInstance(<span class="string">"X.509"</span>);</div><div class="line">        KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());</div><div class="line">        keyStore.load(<span class="keyword">null</span>);</div><div class="line">        <span class="keyword">int</span> index = <span class="number">0</span>;</div><div class="line">        <span class="keyword">for</span> (InputStream certificate : certificates)</div><div class="line">        &#123;</div><div class="line">            String certificateAlias = Integer.toString(index++);</div><div class="line">            keyStore.setCertificateEntry(certificateAlias, certificateFactory.generateCertificate(certificate));</div><div class="line"> </div><div class="line">            <span class="keyword">try</span></div><div class="line">            &#123;</div><div class="line">                <span class="keyword">if</span> (certificate != <span class="keyword">null</span>)</div><div class="line">                    certificate.close();</div><div class="line">            &#125; <span class="keyword">catch</span> (IOException e)</div><div class="line">            &#123;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line"> </div><div class="line">        SSLContext sslContext = SSLContext.getInstance(<span class="string">"TLS"</span>);</div><div class="line"> </div><div class="line">        TrustManagerFactory trustManagerFactory = </div><div class="line">            TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm()); </div><div class="line"> </div><div class="line">        trustManagerFactory.init(keyStore);</div><div class="line">        sslContext.init</div><div class="line">            (   </div><div class="line">                <span class="keyword">null</span>, </div><div class="line">                trustManagerFactory.getTrustManagers(), </div><div class="line">                <span class="keyword">new</span> SecureRandom()</div><div class="line">            );</div><div class="line">       mOkHttpClient.setSslSocketFactory(sslContext.getSocketFactory());</div><div class="line"> </div><div class="line"> </div><div class="line">    &#125; <span class="keyword">catch</span> (Exception e)</div><div class="line">    &#123;</div><div class="line">        e.printStackTrace();</div><div class="line">    &#125; </div><div class="line"> </div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>以上代码的基本流程是：</p>
+<ul>
+<li><p>构造CertificateFactory对象，通过它的generateCertificate(is)方法得到Certificate。</p>
+</li>
+<li><p>然后讲得到的Certificate放入到keyStore中。</p>
+</li>
+<li><p>接下来利用keyStore去初始化我们的TrustManagerFactory</p>
+</li>
+<li><p>由trustManagerFactory.getTrustManagers获得TrustManager[]初始化我们的SSLContext</p>
+</li>
+<li><p>最后，设置我们mOkHttpClient.setSslSocketFactory即可。</p>
+</li>
+</ul>
+<p>然后初始化即可：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyApplication</span> <span class="keyword">extends</span> <span class="title">Application</span></span></div><div class="line">&#123;</div><div class="line">   <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">()</span></span></div><div class="line">    &#123;</div><div class="line">        <span class="keyword">super</span>.onCreate();</div><div class="line"> </div><div class="line">        <span class="keyword">try</span></div><div class="line">        &#123;</div><div class="line">            OkHttpClientManager.getInstance()</div><div class="line">                    .setCertificates(getAssets().open(<span class="string">"srca.cer"</span>));</div><div class="line">        &#125; <span class="keyword">catch</span> (IOException e)</div><div class="line">        &#123;</div><div class="line">            e.printStackTrace();</div><div class="line">        &#125;</div><div class="line"> </div><div class="line"> </div><div class="line">&#125;</div></pre></td></tr></table></figure>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yunfengsa.github.io/2016/01/07/okhttp/" data-id="ciwemdof6000zzsriyrusacwv" class="article-share-link">Delen</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2016/04/12/volleyyuanma/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Nieuwer</strong>
+      <div class="article-nav-title">
+        
+          Volley源码解析
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2016/01/04/rxjava/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Ouder</strong>
+      <div class="article-nav-title">RxJava知多少</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categorieën</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Chromium/">Chromium</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Database/">Database</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Markdown/">Markdown</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Ruby/">Ruby</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/android/">android</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/gradle/">gradle</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/ndk/">ndk</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/octopress/">octopress</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/opencv/">opencv</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/rails/">rails</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/ruby/">ruby</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/rx/">rx</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/weex/">weex</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/设计模式/">设计模式</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Labels</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/binder/">binder</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/surface/">surface</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/binder/" style="font-size: 10px;">binder</a> <a href="/tags/surface/" style="font-size: 10px;">surface</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archieven</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/12/">December 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">November 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/10/">October 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">May 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">April 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">January 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">December 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">November 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">October 2015</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recente berichten</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2016/12/07/hello-world/">Hello World</a>
+          </li>
+        
+          <li>
+            <a href="/2016/11/28/weex-and-vue-and-so-on/">开启Vue学习之旅</a>
+          </li>
+        
+          <li>
+            <a href="/2016/11/07/rx-to-retrofit-and-so-on/">Rx的进攻路线（选取比较好的文章）</a>
+          </li>
+        
+          <li>
+            <a href="/2016/11/06/find-a-way-to-gesturerecognization/">Find A Way to Gesture Recognization</a>
+          </li>
+        
+          <li>
+            <a href="/2016/11/02/camkeandopencv/">CMake编译NDK，以及在OpenCV中的应用</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2016 yunfengsa<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>

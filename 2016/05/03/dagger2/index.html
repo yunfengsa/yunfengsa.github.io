@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>依赖注入Dagger2 | 云枫飒的笔记BLOG</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="依赖注入（DI）适用于实现控制反转（IOC）的最常见的方式。为什么需要控制反转呢？先看一段代码
+12345678910111213141516171819202122public class MovieLister &amp;#123;    private MovieFinder finder;    public MovieLister() &amp;#123;        finder = new Mov">
+<meta property="og:type" content="article">
+<meta property="og:title" content="依赖注入Dagger2">
+<meta property="og:url" content="http://yunfengsa.github.io/2016/05/03/dagger2/index.html">
+<meta property="og:site_name" content="云枫飒的笔记BLOG">
+<meta property="og:description" content="依赖注入（DI）适用于实现控制反转（IOC）的最常见的方式。为什么需要控制反转呢？先看一段代码
+12345678910111213141516171819202122public class MovieLister &amp;#123;    private MovieFinder finder;    public MovieLister() &amp;#123;        finder = new Mov">
+<meta property="og:updated_time" content="2016-12-07T07:33:47.872Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="依赖注入Dagger2">
+<meta name="twitter:description" content="依赖注入（DI）适用于实现控制反转（IOC）的最常见的方式。为什么需要控制反转呢？先看一段代码
+12345678910111213141516171819202122public class MovieLister &amp;#123;    private MovieFinder finder;    public MovieLister() &amp;#123;        finder = new Mov">
+  
+    <link rel="alternate" href="/atom.xml" title="云枫飒的笔记BLOG" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">云枫飒的笔记BLOG</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">个人技术记录</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Zoeken"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yunfengsa.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-dagger2" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/05/03/dagger2/" class="article-date">
+  <time datetime="2016-05-03T07:16:31.000Z" itemprop="datePublished">2016-05-03</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/android/">android</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      依赖注入Dagger2
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>依赖注入（DI）适用于实现控制反转（IOC）的最常见的方式。为什么需要控制反转呢？先看一段代码</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MovieLister</span> </span>&#123;</div><div class="line">    <span class="keyword">private</span> MovieFinder finder;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="title">MovieLister</span><span class="params">()</span> </span>&#123;</div><div class="line">        finder = <span class="keyword">new</span> MovieFinderImpl();</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    <span class="keyword">public</span> Movie[] moviesDirectedBy(String arg) &#123;</div><div class="line">        List allMovies = finder.findAll();</div><div class="line">        <span class="keyword">for</span> (Iterator it = allMovies.iterator(); it.hasNext();) &#123;</div><div class="line">            Movie movie = (Movie) it.next();</div><div class="line">            <span class="keyword">if</span> (!movie.getDirector().equals(arg)) it.remove();</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">return</span> (Movie[]) allMovies.toArray(<span class="keyword">new</span> Movie[allMovies.size()]);</div><div class="line">    &#125;</div><div class="line">    ...</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">MovieFinder</span> </span>&#123;</div><div class="line">    <span class="function">List <span class="title">findAll</span><span class="params">()</span></span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<a id="more"></a>
+<p>我们创建了一个名为MovieLister的类来提供需要的电影列表，它moviesDirectedBy方法提供根据导演名来搜索电影的方式。真正负责搜索电影的是实现了MovieFinder接口的MovieFinderImpl，我们的MovieLister类在构造函数中创建了一个MovieFinderImpl的对象。但是，当我们希望修改finder，将finder替换为一种新的实现时（比如为MovieFinder增加一个参数表明Movie数据的来源是哪个数据库），我们不仅需要修改MovieFinderImpl类，还需要修改我们MovieLister中创建MovieFinderImpl的代码。<strong>这就是依赖注入要处理的耦合。这种在MovieLister中创建MovieFinderImpl的方式，使得MovieLister不仅仅依赖于MovieFinder这个接口，它还依赖于MovieListImpl这个实现。</strong></p>
+<p>这种硬初始化导致了各种问题：1）上文所述的修改其实现时，需要修改创建处的代码；2）不便于测试，这种方式创建的类（上文中的MovieLister）无法单独被测试，其行为和MovieFinderImpl紧紧耦合在一起，同时，也会导致代码的可读性问题（“如果一段代码不便于测试，那么它一定不便于阅读。”）。</p>
+<p>##依赖注入的实现方式</p>
+<ol>
+<li>构造函数注入</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MovieLister</span> </span>&#123;</div><div class="line">    <span class="keyword">private</span> MovieFinder finder;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="title">MovieLister</span><span class="params">(MovieFinder finder)</span> </span>&#123;</div><div class="line">        <span class="keyword">this</span>.finder = finder;</div><div class="line">    &#125;</div><div class="line">    ...</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<ol>
+<li>setter注入</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MovieLister</span> </span>&#123;</div><div class="line">    s...</div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setFinder</span><span class="params">(MovieFinder finder)</span> </span>&#123;</div><div class="line">        <span class="keyword">this</span>.finder = finder;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<ol>
+<li>接口注入</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">InjectFinder</span> </span>&#123;</div><div class="line">    <span class="function"><span class="keyword">void</span> <span class="title">injectFinder</span><span class="params">(MovieFinder finder)</span></span>;</div><div class="line">&#125;</div><div class="line"></div><div class="line"></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">MovieLister</span> <span class="keyword">implements</span> <span class="title">InjectFinder</span> </span>&#123;</div><div class="line">    ...</div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">injectFinder</span><span class="params">(MovieFinder finder)</span> </span>&#123;</div><div class="line">      <span class="keyword">this</span>.finder = finder;</div><div class="line">    &#125;</div><div class="line">    ...</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>总之：非自己主动初始化依赖，而通过外部来传入依赖的方式，我们就称为依赖注入。依赖注入主要有两个好处：</p>
+<ol>
+<li>解耦，将依赖之间解耦。</li>
+<li>因为已经解耦，所以方便做单元测试，尤其是 Mock 测试。</li>
+</ol>
+<p>##进入正题dagger2的工作流程</p>
+<p>基本概念：</p>
+<p>@Inject: 可以用在构造方法上，这样就告诉Dagger2使用这个构造方法来创建对象，如果构造方法里面有参数依赖的话会自动给填充上；也可以用在成员变量上，Dagger2会自动将这个变量初始化。用@Inject修饰的内容可以理解为产品</p>
+<p>@Provides: 用来修饰方法来提供各种依赖，方法的返回类型就是所提供的依赖类型，用@Provides修饰的可以理解为生产机器</p>
+<p>@Module:所有的@Provides方法都必须放到一个Moudle中，一个Moudle就是使用@Moudle修饰的类,可以理解为一个工厂</p>
+<p>@Component：修饰一个接口，将依赖的生产和使用结合起来，可以理解为运输部门吧，将工厂生产的产品运送到使用它的人们手里。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MainActivity</span> <span class="keyword">extends</span> <span class="title">ActionBarActivity</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(Bundle savedInstanceState)</span> </span>&#123;</div><div class="line">        <span class="keyword">super</span>.onCreate(savedInstanceState);</div><div class="line">        setContentView(R.layout.activity_main);</div><div class="line">        UserModel user = <span class="keyword">new</span> UserModel();</div><div class="line">        ((TextView) findViewById(R.id.user_desc_line)).setText(user.id + <span class="string">"\n"</span> + user.name + <span class="string">"\n"</span> + user.gender);</div><div class="line">    &#125;</div><div class="line">    ...</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>在创建UserModel的时候，我们使用了前文所说的hard init。一旦我们的UserModel的创建方式发生了改变（比如需要传入Context对象到构造函数），我们就需要修改所有创建UserModel的代码。而我们希望的是，对于UserModel的修改不影响其他模块的代码（比如这里的MainActivity）。</p>
+<ol>
+<li>构建依赖</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="meta">@Module</span></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ActivityModule</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="meta">@Provides</span> <span class="function">UserModel <span class="title">provideUserModel</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> <span class="keyword">new</span> UserModel();</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>可以看到，我们使用@Module标识类型为module，并用@Provides标识提供依赖的方法。</p>
+<ol>
+<li>构建Injector</li>
+</ol>
+<p>有了提供依赖的组件，我们还需要将依赖注入到需要的对象中。连接提供依赖和消费依赖对象的组件被称为Injector。Dagger2中，我们将其称为component。ActivityComponent代码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="meta">@Component</span>(modules = ActivityModule.class)</div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">ActivityComponent</span> </span>&#123;</div><div class="line">    <span class="function"><span class="keyword">void</span> <span class="title">inject</span><span class="params">(MainActivity activity)</span></span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p><strong>这里必须是真正消耗依赖的类型MainActivity，而不可以写成其父类，比如Activity。因为Dagger2在编译时生成依赖注入的代码，会到inject方法的参数类型中寻找可以注入的对象，但是实际上这些对象存在于MainActivity，而不是Activity中。如果函数声明参数为Activity，Dagger2会认为没有需要注入的对象。当真正在MainActivity中创建Component实例进行注入时，会直接执行按照Activity作为参数生成的inject方法，导致所有注入都失败。</strong></p>
+<ol>
+<li>完成依赖注入</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MainActivity</span> <span class="keyword">extends</span> <span class="title">ActionBarActivity</span> </span>&#123;</div><div class="line">    <span class="keyword">private</span> ActivityComponent mActivityComponent;</div><div class="line"></div><div class="line">    <span class="meta">@Inject</span> UserModel userModel;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(Bundle savedInstanceState)</span> </span>&#123;</div><div class="line">        <span class="keyword">super</span>.onCreate(savedInstanceState);</div><div class="line">        setContentView(R.layout.activity_main);</div><div class="line">        mActivityComponent = DaggerActivityComponent.builder().activityModule(<span class="keyword">new</span> ActivityModule()).build();</div><div class="line">        mActivityComponent.inject(<span class="keyword">this</span>);</div><div class="line">        ((TextView) findViewById(R.id.user_desc_line)).setText(userModel.id + <span class="string">"\n"</span> + userModel.name + <span class="string">"\n"</span> + userModel.gender);</div><div class="line">    &#125;</div><div class="line">    ...</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>首先，我们使用@Inject标志被注入的对象userModel（注意userModel不能为private），之后通过Dagger2生成的实现了我们提供的ActivityComponent接口类DaggerActivityComponent创建component，调用其inject方法完成注入。<br>至此，我们使用Dagger实现了最简单的依赖注入。</p>
+<p>文章参考：</p>
+<p><a href="http://www.wangchenlong.org/2016/03/16/1602/use-dagger-first/" target="_blank" rel="external">非常详细的一篇文章</a></p>
+<p><a href="http://blog.csdn.net/duo2005duo/article/details/50618171" target="_blank" rel="external">另一篇</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yunfengsa.github.io/2016/05/03/dagger2/" data-id="ciwemdofm001ozsrin6rymx9d" class="article-share-link">Delen</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2016/05/05/android-xingneng-tool/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Nieuwer</strong>
+      <div class="article-nav-title">
+        
+          android性能分析工具
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2016/04/22/shenruandroid-surface/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Ouder</strong>
+      <div class="article-nav-title">深入理解系列：Surface</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categorieën</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Chromium/">Chromium</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Database/">Database</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Markdown/">Markdown</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Ruby/">Ruby</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/android/">android</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/gradle/">gradle</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/ndk/">ndk</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/octopress/">octopress</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/opencv/">opencv</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/rails/">rails</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/ruby/">ruby</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/rx/">rx</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/weex/">weex</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/设计模式/">设计模式</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Labels</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/binder/">binder</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/surface/">surface</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/binder/" style="font-size: 10px;">binder</a> <a href="/tags/surface/" style="font-size: 10px;">surface</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archieven</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/12/">December 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">November 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/10/">October 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">May 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">April 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">January 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">December 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">November 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">October 2015</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recente berichten</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2016/12/07/hello-world/">Hello World</a>
+          </li>
+        
+          <li>
+            <a href="/2016/11/28/weex-and-vue-and-so-on/">开启Vue学习之旅</a>
+          </li>
+        
+          <li>
+            <a href="/2016/11/07/rx-to-retrofit-and-so-on/">Rx的进攻路线（选取比较好的文章）</a>
+          </li>
+        
+          <li>
+            <a href="/2016/11/06/find-a-way-to-gesturerecognization/">Find A Way to Gesture Recognization</a>
+          </li>
+        
+          <li>
+            <a href="/2016/11/02/camkeandopencv/">CMake编译NDK，以及在OpenCV中的应用</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2016 yunfengsa<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>

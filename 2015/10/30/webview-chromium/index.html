@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>从webview看下一代Chromium OS | 云枫飒的笔记BLOG</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="Google估计要在明年把Chromium OS嵌入到android系统,并在之后发布独立的系统版本,那作为对谷歌文化的钟爱粉,今天就从4.4之后的webiew看一下Chromium吧
+###为什么Chromium这么受关注呢不陌生的Chrome浏览器的强大,人人皆知,他的多进程架构和快速打开网页的能力令人惊艳,没错,这玩意就是基于Chromiun实现的, 本身Chromiun是Google主导的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="从webview看下一代Chromium OS">
+<meta property="og:url" content="http://yunfengsa.github.io/2015/10/30/webview-chromium/index.html">
+<meta property="og:site_name" content="云枫飒的笔记BLOG">
+<meta property="og:description" content="Google估计要在明年把Chromium OS嵌入到android系统,并在之后发布独立的系统版本,那作为对谷歌文化的钟爱粉,今天就从4.4之后的webiew看一下Chromium吧
+###为什么Chromium这么受关注呢不陌生的Chrome浏览器的强大,人人皆知,他的多进程架构和快速打开网页的能力令人惊艳,没错,这玩意就是基于Chromiun实现的, 本身Chromiun是Google主导的">
+<meta property="og:image" content="http://7xnvyl.com1.z0.glb.clouddn.com/2015-10-30chromiun进程.png">
+<meta property="og:updated_time" content="2016-12-07T07:33:47.856Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="从webview看下一代Chromium OS">
+<meta name="twitter:description" content="Google估计要在明年把Chromium OS嵌入到android系统,并在之后发布独立的系统版本,那作为对谷歌文化的钟爱粉,今天就从4.4之后的webiew看一下Chromium吧
+###为什么Chromium这么受关注呢不陌生的Chrome浏览器的强大,人人皆知,他的多进程架构和快速打开网页的能力令人惊艳,没错,这玩意就是基于Chromiun实现的, 本身Chromiun是Google主导的">
+<meta name="twitter:image" content="http://7xnvyl.com1.z0.glb.clouddn.com/2015-10-30chromiun进程.png">
+  
+    <link rel="alternate" href="/atom.xml" title="云枫飒的笔记BLOG" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">云枫飒的笔记BLOG</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">个人技术记录</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Zoeken"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yunfengsa.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-webview-chromium" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/10/30/webview-chromium/" class="article-date">
+  <time datetime="2015-10-30T05:12:56.000Z" itemprop="datePublished">2015-10-30</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Chromium/">Chromium</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      从webview看下一代Chromium OS
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>Google估计要在明年把Chromium OS嵌入到android系统,并在之后发布独立的系统版本,那作为对谷歌文化的钟爱粉,今天就从4.4之后的webiew看一下Chromium吧</p>
+<p>###为什么Chromium这么受关注呢<br>不陌生的Chrome浏览器的强大,人人皆知,他的多进程架构和快速打开网页的能力令人惊艳,没错,这玩意就是基于Chromiun实现的, 本身Chromiun是Google主导的一个浏览器开源工程,但是因为它的架构是OS级别的,所以基于Chromiun的Chromiun OS也就应运而生喽.</p>
+<p>在android4.4的webview也是基于Chromium的,在之前其是基于webkit的.到此,应该清楚webview\chroimum\Chrome\Chromium OS的关系了吧!<br><a id="more"></a></p>
+<p>###Chromium的基本概述</p>
+<ul>
+<li>Chromium是使用C++开发的,这就牵扯到对象的释放问题,其采用智能指针的方式来实现对象的实现和自动释放(SP和WP就是android系统上提供额度两种强弱指针)</li>
+<li>Chromium是一个多线程架构,那就牵扯到进程间通讯的问题,Chromium会给自己每一个线程创建一个消息队列,如果其他的线程想在本线程执行某一操作的时候,会向本线程发送一个Closure,最终这个Closure会在本线程上得到执行—–这就是Closure机制(像不像Handler)</li>
+<li>Chromium不仅仅是一个多线程架构,也是一个多进程的架构,多线程解决网页卡顿的问题,多进程解决网页的稳定性问题<br>其多线程模型是异步的,就是我抛出Closure,不需要等待它的完成,我就可以哦去做其他事情.</li>
+<li><p>Chromium的多进程主要包括四类:Browser进程  Render进程  GPU进程  Plugin进程</p>
+<ul>
+<li>Browser进程:每一个Chromium实例都会有一个Browser进程,而且只有一个,这个进程负责合成浏览器的UI,包括标题栏,地址and so on;</li>
+<li>Render金策划那个:每一个Tab会有一个Render进程,它的作用是渲染解析网页的内容,其渲染的内容要通过Browser进程合成之后,才能在屏幕上看到;</li>
+<li>GPU进程:当开启硬件加速之后,Browser进程和Render进程都是通过GPU来渲染UI;</li>
+<li>Plugin进程:用来运行第三方插件,比如Flash,同一个plugin的不同实例都是运行在同一个进程下边的,用此来避免创建过多的Plugin进程.<br><br></li>
+<li>多进程架构图:</li>
+</ul>
+</li>
+</ul>
+<p><img src="http://7xnvyl.com1.z0.glb.clouddn.com/2015-10-30chromiun进程.png" alt="chromiun进程.png"></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yunfengsa.github.io/2015/10/30/webview-chromium/" data-id="ciwemdoer000jzsri15xdlen3" class="article-share-link">Delen</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2015/10/30/ruby-jichuyufa/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Nieuwer</strong>
+      <div class="article-nav-title">
+        
+          Ruby_基础语法总结篇
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2015/10/30/database-lianjiechi/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Ouder</strong>
+      <div class="article-nav-title">数据库连接池(C3P0)</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categorieën</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Chromium/">Chromium</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Database/">Database</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Markdown/">Markdown</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Ruby/">Ruby</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/android/">android</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/gradle/">gradle</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/ndk/">ndk</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/octopress/">octopress</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/opencv/">opencv</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/rails/">rails</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/ruby/">ruby</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/rx/">rx</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/weex/">weex</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/设计模式/">设计模式</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Labels</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/binder/">binder</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/surface/">surface</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/binder/" style="font-size: 10px;">binder</a> <a href="/tags/surface/" style="font-size: 10px;">surface</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archieven</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/12/">December 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">November 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/10/">October 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">May 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">April 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">January 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">December 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">November 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">October 2015</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recente berichten</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2016/12/07/hello-world/">Hello World</a>
+          </li>
+        
+          <li>
+            <a href="/2016/11/28/weex-and-vue-and-so-on/">开启Vue学习之旅</a>
+          </li>
+        
+          <li>
+            <a href="/2016/11/07/rx-to-retrofit-and-so-on/">Rx的进攻路线（选取比较好的文章）</a>
+          </li>
+        
+          <li>
+            <a href="/2016/11/06/find-a-way-to-gesturerecognization/">Find A Way to Gesture Recognization</a>
+          </li>
+        
+          <li>
+            <a href="/2016/11/02/camkeandopencv/">CMake编译NDK，以及在OpenCV中的应用</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2016 yunfengsa<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>

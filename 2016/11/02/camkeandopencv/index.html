@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>CMake编译NDK，以及在OpenCV中的应用 | 云枫飒的笔记BLOG</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="##在最新的android studio下开始友好支持CMake对C++/C的支持
+其简单的使用方法：1、 添加app/src/jni/name.cpp文件，注意对于android的视图中则显示在cpp文件夹下。
+例如这个函数是将图片进行黑白转换
+1234567891011121314151617181920212223242526272829303132333435363738394041424">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CMake编译NDK，以及在OpenCV中的应用">
+<meta property="og:url" content="http://yunfengsa.github.io/2016/11/02/camkeandopencv/index.html">
+<meta property="og:site_name" content="云枫飒的笔记BLOG">
+<meta property="og:description" content="##在最新的android studio下开始友好支持CMake对C++/C的支持
+其简单的使用方法：1、 添加app/src/jni/name.cpp文件，注意对于android的视图中则显示在cpp文件夹下。
+例如这个函数是将图片进行黑白转换
+1234567891011121314151617181920212223242526272829303132333435363738394041424">
+<meta property="og:updated_time" content="2016-12-07T07:33:47.872Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="CMake编译NDK，以及在OpenCV中的应用">
+<meta name="twitter:description" content="##在最新的android studio下开始友好支持CMake对C++/C的支持
+其简单的使用方法：1、 添加app/src/jni/name.cpp文件，注意对于android的视图中则显示在cpp文件夹下。
+例如这个函数是将图片进行黑白转换
+1234567891011121314151617181920212223242526272829303132333435363738394041424">
+  
+    <link rel="alternate" href="/atom.xml" title="云枫飒的笔记BLOG" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">云枫飒的笔记BLOG</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">个人技术记录</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Zoeken"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yunfengsa.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-camkeandopencv" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/11/02/camkeandopencv/" class="article-date">
+  <time datetime="2016-11-02T07:01:26.000Z" itemprop="datePublished">2016-11-02</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/ndk/">ndk</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      CMake编译NDK，以及在OpenCV中的应用
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>##在最新的android studio下开始友好支持CMake对C++/C的支持</p>
+<p>其简单的使用方法：<br>1、 添加app/src/jni/name.cpp文件，注意对于android的视图中则显示在cpp文件夹下。</p>
+<p>例如这个函数是将图片进行黑白转换</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;jni.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;opencv2/core.hpp&gt;</span></span></div><div class="line"></div><div class="line"><span class="keyword">extern</span> <span class="string">"C"</span> &#123;</div><div class="line"><span class="function">jstring</span></div><div class="line"><span class="title">Java_com_exexample_opencvandar_NdkLoader_stringFromJNI</span><span class="params">(</span></div><div class="line">        JNIEnv *env,</div><div class="line">        jobject <span class="comment">/* this */</span>) &#123;</div><div class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> hello = <span class="string">"opencv图像处理"</span>;</div><div class="line">    <span class="keyword">return</span> env-&gt;NewStringUTF(hello.c_str());</div><div class="line">&#125;</div><div class="line"><span class="function">jstring</span></div><div class="line"><span class="title">Java_com_exexample_opencvandar_NdkLoader_validate</span><span class="params">(</span></div><div class="line">        JNIEnv *env,</div><div class="line">        jobject,</div><div class="line">        jlong addrGray,</div><div class="line">        jlong addrRgba)&#123;</div><div class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> hello2 = <span class="string">"Hello from validate"</span>;</div><div class="line">    <span class="keyword">return</span> env-&gt;NewStringUTF(hello2.c_str());</div><div class="line">&#125;</div><div class="line">&#125;</div><div class="line"><span class="comment">//图像处理</span></div><div class="line"><span class="keyword">extern</span> <span class="string">"C"</span></div><div class="line"><span class="function">JNIEXPORT jintArray JNICALL</span></div><div class="line"><span class="title">Java_com_exexample_opencvandar_NdkLoader_getGrayImage</span><span class="params">(</span></div><div class="line">        JNIEnv *env,</div><div class="line">        jclass type,</div><div class="line">        jintArray pixels_,</div><div class="line">        jint w, jint h) &#123;</div><div class="line">    jint *pixels = env-&gt;GetIntArrayElements(pixels_, <span class="literal">NULL</span>);</div><div class="line">    <span class="comment">// TODO</span></div><div class="line">    <span class="keyword">if</span>(pixels==<span class="literal">NULL</span>)&#123;</div><div class="line">        <span class="keyword">return</span> <span class="literal">NULL</span>;</div><div class="line">    &#125;</div><div class="line">    cv::<span class="function">Mat <span class="title">imgData</span><span class="params">(h, w, CV_8UC4, pixels)</span></span>;</div><div class="line">    uchar *ptr = imgData.ptr(<span class="number">0</span>);</div><div class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; w * h; i++) &#123;</div><div class="line">        <span class="keyword">int</span> grayScale = (<span class="keyword">int</span>) (ptr[<span class="number">4</span> * i + <span class="number">2</span>] * <span class="number">0.299</span> + ptr[<span class="number">4</span> * i + <span class="number">1</span>] * <span class="number">0.587</span></div><div class="line">                               + ptr[<span class="number">4</span> * i + <span class="number">0</span>] * <span class="number">0.114</span>);</div><div class="line">        ptr[<span class="number">4</span> * i + <span class="number">1</span>] = (uchar) grayScale;</div><div class="line">        ptr[<span class="number">4</span> * i + <span class="number">2</span>] = (uchar) grayScale;</div><div class="line">        ptr[<span class="number">4</span> * i + <span class="number">0</span>] = (uchar) grayScale;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="keyword">int</span> size = w * h;</div><div class="line">    jintArray result = env-&gt;NewIntArray(size);</div><div class="line">    env-&gt;SetIntArrayRegion(result, <span class="number">0</span>, size, pixels);</div><div class="line">    env-&gt;ReleaseIntArrayElements(pixels_, pixels, <span class="number">0</span>);</div><div class="line">    <span class="keyword">return</span> result;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<a id="more"></a>
+<p>2、 在app文件下添加“CMakeLists.txt”文件，</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"># Sets the minimum version of CMake required to build the native</div><div class="line"><span class="meta"># library. You should either keep the default value or only pass a</span></div><div class="line"><span class="meta"># value of 3.4.0 or lower.</span></div><div class="line"></div><div class="line">#工程路径</div><div class="line"><span class="built_in">set</span>(pathToProject D:/adroid_studio_projects/OpenCV/MyApplication)</div><div class="line">#OpenCV-android-sdk路径</div><div class="line"><span class="built_in">set</span>(pathToOpenCv D:/OpenCV/OpenCV-android-sdk)</div><div class="line"></div><div class="line">#CMake版本信息</div><div class="line">cmake_minimum_required(VERSION <span class="number">3.4</span><span class="number">.1</span>)</div><div class="line">#支持-<span class="built_in">std</span>=gnu++<span class="number">11</span></div><div class="line"><span class="built_in">set</span>(CMAKE_VERBOSE_MAKEFILE on)</div><div class="line"><span class="built_in">set</span>(CMAKE_CXX_FLAGS <span class="string">"$&#123;CMAKE_CXX_FLAGS&#125; -std=gnu++11"</span>)</div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line">#CPP文件夹下带编译的cpp文件</div><div class="line">add_library( native-lib SHARED src/main/jni/native-lib.cpp )</div><div class="line">#配置加载native依赖</div><div class="line">include_directories($&#123;pathToOpenCv&#125;/sdk/native/jni/include)</div><div class="line"></div><div class="line">#动态方式加载</div><div class="line">add_library( lib_opencv SHARED IMPORTED )</div><div class="line"></div><div class="line">#引入libopencv_java3.so文件</div><div class="line">set_target_properties(lib_opencv PROPERTIES IMPORTED_LOCATION</div><div class="line">$&#123;pathToProject&#125;/app/src/main/jniLibs/$&#123;ANDROID_ABI&#125;/libopencv_java3.so)</div><div class="line"></div><div class="line">#C++日志</div><div class="line">find_library( <span class="built_in">log</span>-lib <span class="built_in">log</span> )</div><div class="line"></div><div class="line">#target_link_libraries( native-lib $\&#123;<span class="built_in">log</span>-lib&#125; )</div><div class="line">target_link_libraries( native-lib $\&#123;<span class="built_in">log</span>-lib&#125; lib_opencv)</div></pre></td></tr></table></figure>
+<p><strong>关于路径一定要用英文，中文加载会失败，但是并不会报错</strong></p>
+<p><a href="https://developer.android.com/studio/projects/add-native-code.html" target="_blank" rel="external">详细介绍点此（自行出墙）</a></p>
+<p>3、在app的gradle下添加</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">defaultConfig &#123;</div><div class="line">        ...</div><div class="line">        externalNativeBuild &#123;</div><div class="line">            cmake &#123;</div><div class="line">                cppFlags <span class="string">"-std=c++11 -frtti -fexceptions"</span> <span class="comment">//意义介绍请走上述传送门</span></div><div class="line">				abiFilters <span class="string">'armeabi'</span>, <span class="string">'armeabi-v7a'</span>, <span class="string">'arm64-v8a'</span><span class="comment">//使用常见的三种abi，缩减jniLibs下的.so，减小apk体积。</span></div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">   </div><div class="line">    externalNativeBuild &#123;</div><div class="line">        cmake &#123;</div><div class="line">            path <span class="string">'CMakeLists.txt'</span>  <span class="comment">//指定文件路径</span></div><div class="line">        &#125;</div><div class="line">    &#125;</div></pre></td></tr></table></figure>
+<p>##OpenCV 在android studio2.2以上的搭建过程</p>
+<p>第一步，下载<a href="http://opencv.org/downloads.html" target="_blank" rel="external">OpenCV-android-sdk</a>。</p>
+<p>第二步，建立工程，然后File  New  Import Module将OpenCV-3.1.0-android-sdk\OpenCV-android-sdk\sdk\java并导入OpenCV-android-sdk的Library.将openCVLibrary310下的gradle文件的buildToolsVersion、compileSdkVwesion等改成和工程一样版本。</p>
+<p>第三步、将OpenCV-android-sdk\sdk\native\libs下的libs文件拷贝到main目录下，重命名为jniLibs</p>
+<p>第四步、在APP下的build.gradle文件下增加sourceSet，指定到jniLibs上，此步可以省略，因为默认的JNI路径就是main/jniLibs</p>
+<p>第五步：在主函数中</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="keyword">static</span> &#123;</div><div class="line">        System.loadLibrary(<span class="string">"native-lib"</span>);</div><div class="line">        System.loadLibrary(<span class="string">"opencv_java3"</span>);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="comment">/**</span></div><div class="line">     * A native method that is implemented by the 'native-lib' native library,</div><div class="line">     * which is packaged with this application.</div><div class="line">     */</div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">native</span> String <span class="title">stringFromJNI</span><span class="params">()</span></span>;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">native</span> String <span class="title">validate</span><span class="params">(<span class="keyword">long</span> matAddrGr, <span class="keyword">long</span> matAddrRgba)</span></span>;</div><div class="line"></div><div class="line">    <span class="comment">//图像处理</span></div><div class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">native</span> <span class="keyword">int</span>[] getGrayImage(<span class="keyword">int</span>[] pixels, <span class="keyword">int</span> w, <span class="keyword">int</span> h);</div></pre></td></tr></table></figure>
+<p>##参考资料</p>
+<p><a href="http://blog.csdn.net/yanzi1225627/article/details/27863615" target="_blank" rel="external"> OpenCV4Android释疑: 透析Android以JNI调OpenCV的三种方式(让OpenCVManager永不困扰)</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yunfengsa.github.io/2016/11/02/camkeandopencv/" data-id="ciwemdofm001szsrii73i9qne" class="article-share-link">Delen</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2016/11/06/find-a-way-to-gesturerecognization/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Nieuwer</strong>
+      <div class="article-nav-title">
+        
+          Find A Way to Gesture Recognization
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2016/10/17/make-gradle-faster/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Ouder</strong>
+      <div class="article-nav-title">加速Gradle之路</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categorieën</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Chromium/">Chromium</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Database/">Database</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Markdown/">Markdown</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Ruby/">Ruby</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/android/">android</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/gradle/">gradle</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/ndk/">ndk</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/octopress/">octopress</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/opencv/">opencv</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/rails/">rails</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/ruby/">ruby</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/rx/">rx</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/weex/">weex</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/设计模式/">设计模式</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Labels</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/binder/">binder</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/surface/">surface</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/binder/" style="font-size: 10px;">binder</a> <a href="/tags/surface/" style="font-size: 10px;">surface</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archieven</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/12/">December 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">November 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/10/">October 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">May 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">April 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">January 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">December 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">November 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">October 2015</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recente berichten</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2016/12/07/hello-world/">Hello World</a>
+          </li>
+        
+          <li>
+            <a href="/2016/11/28/weex-and-vue-and-so-on/">开启Vue学习之旅</a>
+          </li>
+        
+          <li>
+            <a href="/2016/11/07/rx-to-retrofit-and-so-on/">Rx的进攻路线（选取比较好的文章）</a>
+          </li>
+        
+          <li>
+            <a href="/2016/11/06/find-a-way-to-gesturerecognization/">Find A Way to Gesture Recognization</a>
+          </li>
+        
+          <li>
+            <a href="/2016/11/02/camkeandopencv/">CMake编译NDK，以及在OpenCV中的应用</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2016 yunfengsa<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>

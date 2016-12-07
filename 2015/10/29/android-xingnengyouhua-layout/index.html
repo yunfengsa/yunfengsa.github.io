@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>android_性能优化第三篇_布局篇 | 云枫飒的笔记BLOG</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="养成良好的布局编写习惯,是一个androidUI良好表现的保证,多使用抽象布局标签,去除不必要的嵌套节点和view节点,减少inflate是关键.
+###步骤1 抽象布局标签
+####标签这个很简单,我们平时引入header或者footer的时候,多用此标签,添加layout属性即可,若在此写入其他属性(比如layout_id等),其实就是对引入的子布局顶节点的定义.
+####标签这个标签对于初学">
+<meta property="og:type" content="article">
+<meta property="og:title" content="android_性能优化第三篇_布局篇">
+<meta property="og:url" content="http://yunfengsa.github.io/2015/10/29/android-xingnengyouhua-layout/index.html">
+<meta property="og:site_name" content="云枫飒的笔记BLOG">
+<meta property="og:description" content="养成良好的布局编写习惯,是一个androidUI良好表现的保证,多使用抽象布局标签,去除不必要的嵌套节点和view节点,减少inflate是关键.
+###步骤1 抽象布局标签
+####标签这个很简单,我们平时引入header或者footer的时候,多用此标签,添加layout属性即可,若在此写入其他属性(比如layout_id等),其实就是对引入的子布局顶节点的定义.
+####标签这个标签对于初学">
+<meta property="og:updated_time" content="2016-12-07T07:33:47.856Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="android_性能优化第三篇_布局篇">
+<meta name="twitter:description" content="养成良好的布局编写习惯,是一个androidUI良好表现的保证,多使用抽象布局标签,去除不必要的嵌套节点和view节点,减少inflate是关键.
+###步骤1 抽象布局标签
+####标签这个很简单,我们平时引入header或者footer的时候,多用此标签,添加layout属性即可,若在此写入其他属性(比如layout_id等),其实就是对引入的子布局顶节点的定义.
+####标签这个标签对于初学">
+  
+    <link rel="alternate" href="/atom.xml" title="云枫飒的笔记BLOG" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">云枫飒的笔记BLOG</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">个人技术记录</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Zoeken"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yunfengsa.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-android-xingnengyouhua-layout" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/10/29/android-xingnengyouhua-layout/" class="article-date">
+  <time datetime="2015-10-29T02:02:44.000Z" itemprop="datePublished">2015-10-29</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/android/">android</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      android_性能优化第三篇_布局篇
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>养成良好的布局编写习惯,是一个androidUI良好表现的保证,多使用抽象布局标签,去除不必要的嵌套节点和view节点,减少inflate是关键.</p>
+<p>###步骤1 抽象布局标签</p>
+<p>####<include\>标签<br>这个很简单,我们平时引入header或者footer的时候,多用此标签,添加layout属性即可,若在此写入其他属性(比如layout_id等),其实就是对引入的子布局顶节点的定义.</include\></p>
+<p>####<viewstub\>标签<br>这个标签对于初学者可能用的比较少,但是这个很重要,他和include 的功能有点类似,也是用来引入外部布局. 但是这个标签默认不会扩张,即不会占用显示也不会占用位置,在解析的时候节省cpu和内存.<br><br>这个标签一般用来引入那些默认不会显示的布局.当需要显示的时候:<br><a id="more"></a><br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">private</span> View networkErrorView;</div><div class="line"> </div><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">showNetError</span><span class="params">()</span> </span>&#123;</div><div class="line">	<span class="comment">// not repeated infalte</span></div><div class="line">	<span class="keyword">if</span> (networkErrorView != <span class="keyword">null</span>) &#123;</div><div class="line">		networkErrorView.setVisibility(View.VISIBLE);</div><div class="line">		<span class="keyword">return</span>;</div><div class="line">	&#125;</div><div class="line"> </div><div class="line">	ViewStub stub = (ViewStub)findViewById(R.id.network_error_layout);</div><div class="line">	networkErrorView = stub.inflate();</div><div class="line">	Button networkSetting = (Button)networkErrorView.findViewById(R.id.network_setting);</div><div class="line">	Button refresh = (Button)findViewById(R.id.network_refresh);</div><div class="line">&#125;</div><div class="line"> </div><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">showNormal</span><span class="params">()</span> </span>&#123;</div><div class="line">	<span class="keyword">if</span> (networkErrorView != <span class="keyword">null</span>) &#123;</div><div class="line">		networkErrorView.setVisibility(View.GONE);</div><div class="line">	&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></viewstub\></p>
+<p><strong>利用</strong><code>viewstub.inflate</code><strong>进行展开就可以了,当然也可以使用</strong><code>viewstub.setvisibility(View.VISIBLE)</code><strong>这种情况下,则不需要显式的转换为viewstub进行操作</strong></p>
+<p>####<merge\>标签<br>这个标签的主要作用就是减少不必要的节点</merge\></p>
+<p>适用场景:</p>
+<ul>
+<li>布局的顶节点是Framelayout并且不需要设置background或padding等属性, 可用mege代替,意味Activity的内容视图的parentview就是framlayout.</li>
+<li>当include 的时候,子节点的顶布局可以使用mege,这样引入便会自动忽略顶节点</li>
+</ul>
+<p>###步骤2 去除不必要的嵌套和view节点</p>
+<ul>
+<li>不需要的节点尽量使用viewtub和GONG(visibility)</li>
+<li>尽量使用RelativeLayout代替LinearLayout</li>
+</ul>
+<p>###步骤3 减少inflate</p>
+<p>比如在viewstub标签中的讲解,我们stub.inflate的view可以设置为全局变量,这样在下次判定不为空的时候,直接显示即可<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">if</span> (networkErrorView != <span class="keyword">null</span>) &#123;   <span class="comment">//neworkErrorView为全局变量</span></div><div class="line">	networkErrorView.setVisibility(View.VISIBLE);</div><div class="line">	<span class="keyword">return</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>还有一个典型的例子listview的getview中的convertview\viewholder的使用,这个很简单,不赘述.</p>
+<p>###其他补充点</p>
+<p><strong>用SurfaveView或TextureView代替普通的view</strong></p>
+<p>SurfaceView和TextureView可以通过绘图操作移动到另一个单独的线程上提高性能.</p>
+<p><a href="http://www.jcodecraeer.com/a/anzhuokaifa/androidkaifa/2014/1213/2153.html" target="_blank" rel="external">Textureview</a>是在android4.0之后引入的.</p>
+<p><strong>使用RenderJavascript</strong></p>
+<p>RenderScript是Adnroid3.0引进的用来在Android上写高性能代码的一种语言，语法给予C语言的C99标准，他的结构是独立的，所以不需要为不同的CPU或者GPU定制代码代码。(暂时只是膜拜中)</p>
+<p><strong>使用OpenGL绘图</strong></p>
+<p>android支持OpenGL API的高性能绘图  android4.3以后支持OpenGL ES3.0,功能真是越来越强大啊</p>
+<p><strong>尽量为所有的分辨率创建资源</strong></p>
+<p>这样可以减少不必要的硬件缩放,这里有一个神奇的工具<a href="http://romannurik.github.io/AndroidAssetStudio/index.html" target="_blank" rel="external">Android Asset Studio</a></p>
+<p><em>这里简单说一下不同的分辨率对用的drawable或者mipmap的资源配置</em></p>
+<p>首先Drawable资源分为xxhdpi，xhdpi，hdpi，mdpi，ldpi，分别为超超高密度400dpi（左右），超高密度320dpi，高密度240dpi，中密度160dpi，低密度120dpi。</p>
+<p>然后手机的屏幕又分为FWVGA，WVGA，VGA，HVGA，QVGA，其中</p>
+<ul>
+<li>VGA是：Video Graphic Array，显示标准为480 x 640；</li>
+<li>WVGA是Wide VGA，分辨率为480 x 800；</li>
+<li>FWVGA是Full Wide VGA，分辨率为：480 x 854；</li>
+<li>HVGA是Half VGA，分辨率为：320 x 480；</li>
+<li>QVGA是Quarter VGA，分辨率为：240 x 320；</li>
+</ul>
+<p>xxhdpi：主要存放超超高密度图片，背景图：1080 x 1920，Icon：144 x 144，适配机型：谷歌 Nexus 4<br><br>xhdpi：主要存放超高密度图片，背景图：720 x 1280，Icon：96 x 96，适配机型：小米2等大屏手机<br><br>hdpi：主要放高密度图片：背景图：480 x 800，Icon：72 x 72，适配机型：WVGA(480 x 800)和FWVGA(480 x 854)<br><br>mdpi：主要放中密度图片：背景图 ：320 x 480，Icon：48 x 48，适配机型：HVGA(320 x 480)<br><br>ldpi：主要放低密度图片：背景图：240 x 320，Icon：36 x 36，适配机型：QVGA(240 x 320)<br></p>
+<p>###性能调优工具</p>
+<ul>
+<li>hierarchy viewer<br><a href="http://developer.android.com/intl/zh-cn/tools/debugging/debugging-ui.html" target="_blank" rel="external">详情点此</a></li>
+<li>layoutopt<br>layoutopt是一个可以提供layout及其层级优化提示的命令行，在sdk16以后已经被lint取代，在Windows-&gt;Show View-&gt;Other-&gt;Android-&gt;Lint Warnings查看lint优化提示，lint具体介绍可见<a href="http://developer.android.com/intl/zh-cn/tools/debugging/improving-w-lint.html" target="_blank" rel="external">Improving Your Code with lint</a>。</li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yunfengsa.github.io/2015/10/29/android-xingnengyouhua-layout/" data-id="ciwemdoeb000czsrij0p13oxk" class="article-share-link">Delen</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2015/10/29/android-zhutihuanfu/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Nieuwer</strong>
+      <div class="article-nav-title">
+        
+          android主题切换
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2015/10/28/android-xingnengyouhua-database/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Ouder</strong>
+      <div class="article-nav-title">android性能优化第二篇_浅谈数据库优化</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categorieën</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Chromium/">Chromium</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Database/">Database</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Markdown/">Markdown</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Ruby/">Ruby</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/android/">android</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/gradle/">gradle</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/ndk/">ndk</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/octopress/">octopress</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/opencv/">opencv</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/rails/">rails</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/ruby/">ruby</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/rx/">rx</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/weex/">weex</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/设计模式/">设计模式</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Labels</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/binder/">binder</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/surface/">surface</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/binder/" style="font-size: 10px;">binder</a> <a href="/tags/surface/" style="font-size: 10px;">surface</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archieven</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/12/">December 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">November 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/10/">October 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">May 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">April 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">January 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">December 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">November 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">October 2015</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recente berichten</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2016/12/07/hello-world/">Hello World</a>
+          </li>
+        
+          <li>
+            <a href="/2016/11/28/weex-and-vue-and-so-on/">开启Vue学习之旅</a>
+          </li>
+        
+          <li>
+            <a href="/2016/11/07/rx-to-retrofit-and-so-on/">Rx的进攻路线（选取比较好的文章）</a>
+          </li>
+        
+          <li>
+            <a href="/2016/11/06/find-a-way-to-gesturerecognization/">Find A Way to Gesture Recognization</a>
+          </li>
+        
+          <li>
+            <a href="/2016/11/02/camkeandopencv/">CMake编译NDK，以及在OpenCV中的应用</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2016 yunfengsa<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>

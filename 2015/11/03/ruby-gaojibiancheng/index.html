@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Ruby_高级教程 | 云枫飒的笔记BLOG</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="##Ruby 面向对象
+as we all know,ruby是一门纯面向对象的语言,即使是最原始的东西:字符串\数字\true\false都是对象.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Ruby_高级教程">
+<meta property="og:url" content="http://yunfengsa.github.io/2015/11/03/ruby-gaojibiancheng/index.html">
+<meta property="og:site_name" content="云枫飒的笔记BLOG">
+<meta property="og:description" content="##Ruby 面向对象
+as we all know,ruby是一门纯面向对象的语言,即使是最原始的东西:字符串\数字\true\false都是对象.">
+<meta property="og:updated_time" content="2016-12-07T07:33:47.856Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Ruby_高级教程">
+<meta name="twitter:description" content="##Ruby 面向对象
+as we all know,ruby是一门纯面向对象的语言,即使是最原始的东西:字符串\数字\true\false都是对象.">
+  
+    <link rel="alternate" href="/atom.xml" title="云枫飒的笔记BLOG" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">云枫飒的笔记BLOG</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">个人技术记录</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Zoeken"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yunfengsa.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-ruby-gaojibiancheng" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/11/03/ruby-gaojibiancheng/" class="article-date">
+  <time datetime="2015-11-03T12:33:50.000Z" itemprop="datePublished">2015-11-03</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/ruby/">ruby</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Ruby_高级教程
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>##Ruby 面向对象</p>
+<p>as we all know,ruby是一门纯面向对象的语言,即使是最原始的东西:字符串\数字\true\false都是对象.<br><a id="more"></a></p>
+<p><strong>访问器(accessor) &amp; 设置器(setter)方法</strong></p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div></pre></td><td class="code"><pre><div class="line"><span class="comment">#!/usr/bin/ruby -w</span></div><div class="line"></div><div class="line"><span class="comment"># 定义类</span></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Box</span></span></div><div class="line">   <span class="comment"># 构造器方法</span></div><div class="line">   <span class="function"><span class="keyword">def</span> <span class="title">initialize</span><span class="params">(w,h)</span></span></div><div class="line">      @width, @height = w, h</div><div class="line">   <span class="keyword">end</span></div><div class="line"></div><div class="line">   <span class="comment"># 访问器方法</span></div><div class="line">   <span class="function"><span class="keyword">def</span> <span class="title">getWidth</span></span></div><div class="line">      @width</div><div class="line">   <span class="keyword">end</span></div><div class="line">   <span class="function"><span class="keyword">def</span> <span class="title">getHeight</span></span></div><div class="line">      @height</div><div class="line">   <span class="keyword">end</span></div><div class="line"></div><div class="line">   <span class="comment"># 设置器方法</span></div><div class="line">   <span class="function"><span class="keyword">def</span> <span class="title">setWidth=</span><span class="params">(value)</span></span></div><div class="line">      @width = value</div><div class="line">   <span class="keyword">end</span></div><div class="line">   <span class="function"><span class="keyword">def</span> <span class="title">setHeight=</span><span class="params">(value)</span></span></div><div class="line">      @height = value</div><div class="line">   <span class="keyword">end</span></div><div class="line"><span class="keyword">end</span></div><div class="line"></div><div class="line"><span class="comment"># 创建对象</span></div><div class="line">box = Box.new(<span class="number">10</span>, <span class="number">20</span>)</div><div class="line"></div><div class="line"><span class="comment"># 使用设置器方法</span></div><div class="line">box.setWidth = <span class="number">30</span></div><div class="line">box.setHeight = <span class="number">50</span></div><div class="line"></div><div class="line"><span class="comment"># 使用访问器方法</span></div><div class="line">x = box.getWidth()</div><div class="line">y = box.getHeight()</div></pre></td></tr></table></figure>
+<p><strong>类变量和类方法</strong></p>
+<p>类变量是在类的所有实例中共享的变量。换句话说，类变量的实例可以被所有的对象实例访问。类变量以两个 @ 字符（@@）作为前缀，类变量必须在类定义中被初始化，如下面实例所示。<br>类方法使用 def self.methodname() 定义，类方法以 end 分隔符结尾。类方法可使用带有类名称的 classname.methodname 形式调用</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div></pre></td><td class="code"><pre><div class="line"><span class="comment">#!/usr/bin/ruby -w</span></div><div class="line"></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Box</span></span></div><div class="line">   <span class="comment"># 初始化类变量</span></div><div class="line">   @@count = <span class="number">0</span></div><div class="line">   <span class="function"><span class="keyword">def</span> <span class="title">initialize</span><span class="params">(w,h)</span></span></div><div class="line">      <span class="comment"># 给实例变量赋值</span></div><div class="line">      @width, @height = w, h</div><div class="line"></div><div class="line">      @@count += <span class="number">1</span></div><div class="line">   <span class="keyword">end</span></div><div class="line"></div><div class="line">   <span class="function"><span class="keyword">def</span> <span class="title">self</span>.<span class="title">printCount</span><span class="params">()</span></span></div><div class="line">      puts <span class="string">"Box count is : #@@count"</span></div><div class="line">   <span class="keyword">end</span></div><div class="line"><span class="keyword">end</span></div><div class="line"></div><div class="line"><span class="comment"># 创建两个对象</span></div><div class="line">box1 = Box.new(<span class="number">10</span>, <span class="number">20</span>)</div><div class="line">box2 = Box.new(<span class="number">30</span>, <span class="number">100</span>)</div><div class="line"></div><div class="line"><span class="comment"># 调用类方法来输出盒子计数</span></div><div class="line">Box.printCount()</div></pre></td></tr></table></figure>
+<p><strong>to_s方法</strong></p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="comment">#!/usr/bin/ruby -w</span></div><div class="line"></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Box</span></span></div><div class="line">   <span class="comment"># 构造器方法</span></div><div class="line">   <span class="function"><span class="keyword">def</span> <span class="title">initialize</span><span class="params">(w,h)</span></span></div><div class="line">      @width, @height = w, h</div><div class="line">   <span class="keyword">end</span></div><div class="line">   <span class="comment"># 定义 to_s 方法</span></div><div class="line">   <span class="function"><span class="keyword">def</span> <span class="title">to_s</span></span></div><div class="line">      <span class="string">"(w:#@width,h:#@height)"</span>  <span class="comment"># 对象的字符串格式</span></div><div class="line">   <span class="keyword">end</span></div><div class="line"><span class="keyword">end</span></div><div class="line"></div><div class="line"><span class="comment"># 创建对象</span></div><div class="line">box = Box.new(<span class="number">10</span>, <span class="number">20</span>)</div><div class="line"></div><div class="line"><span class="comment"># 自动调用 to_s 方法</span></div><div class="line">puts <span class="string">"String representation of box is : <span class="subst">#&#123;box&#125;</span>"</span></div></pre></td></tr></table></figure>
+<p>输出结果为</p>
+<blockquote>
+<p>String representation of box is : (w:10,h:20)</p>
+</blockquote>
+<p><strong>访问控制</strong></p>
+<p>Ruby 为您提供了三个级别的实例方法保护，分别是 public、private 或 protected。Ruby 不在实例和类变量上应用任何访问控制。</p>
+<ul>
+<li><em>Public 方法</em>： Public 方法可被任意对象调用。默认情况下，方法都是 public 的，除了 initialize 方法总是 private 的。</li>
+<li><em>Private 方法</em>： Private 方法不能从类外部访问或查看。只有类方法可以访问私有成员。</li>
+<li><em>Protected 方法</em>： Protected 方法只能被类及其子类的对象调用。<strong>访问也只能在类及其子类内部进行</strong>。</li>
+</ul>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div></pre></td><td class="code"><pre><div class="line"><span class="comment">#!/usr/bin/ruby -w</span></div><div class="line"></div><div class="line"><span class="comment"># 定义类</span></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Box</span></span></div><div class="line">   <span class="comment"># 构造器方法</span></div><div class="line">   <span class="function"><span class="keyword">def</span> <span class="title">initialize</span><span class="params">(w,h)</span></span></div><div class="line">      @width, @height = w, h</div><div class="line">   <span class="keyword">end</span></div><div class="line"></div><div class="line">   <span class="comment"># 实例方法默认是 public 的</span></div><div class="line">   <span class="function"><span class="keyword">def</span> <span class="title">getArea</span></span></div><div class="line">      getWidth() * getHeight</div><div class="line">   <span class="keyword">end</span></div><div class="line"></div><div class="line">   <span class="comment"># 定义 private 的访问器方法</span></div><div class="line">   <span class="function"><span class="keyword">def</span> <span class="title">getWidth</span></span></div><div class="line">      @width</div><div class="line">   <span class="keyword">end</span></div><div class="line">   <span class="function"><span class="keyword">def</span> <span class="title">getHeight</span></span></div><div class="line">      @height</div><div class="line">   <span class="keyword">end</span></div><div class="line">   <span class="comment"># make them private</span></div><div class="line">   private <span class="symbol">:getWidth</span>, <span class="symbol">:getHeight</span></div><div class="line"></div><div class="line">   <span class="comment"># 用于输出面积的实例方法</span></div><div class="line">   <span class="function"><span class="keyword">def</span> <span class="title">printArea</span></span></div><div class="line">      @area = getWidth() * getHeight</div><div class="line">      puts <span class="string">"Big box area is : #@area"</span></div><div class="line">   <span class="keyword">end</span></div><div class="line">   <span class="comment"># 让实例方法是 protected 的</span></div><div class="line">   protected <span class="symbol">:printArea</span></div><div class="line"><span class="keyword">end</span></div><div class="line"></div><div class="line"><span class="comment"># 创建对象</span></div><div class="line">box = Box.new(<span class="number">10</span>, <span class="number">20</span>)</div><div class="line"></div><div class="line"><span class="comment"># 调用实例方法</span></div><div class="line">a = box.getArea()</div><div class="line">puts <span class="string">"Area of the box is : <span class="subst">#&#123;a&#125;</span>"</span></div><div class="line"></div><div class="line"><span class="comment"># 尝试调用 protected 的实例方法</span></div><div class="line">box.printArea()</div></pre></td></tr></table></figure>
+<p>当上面的代码执行时，它会产生以下结果。在这里，第一种方法调用成功，但是第二方法会产生一个问题。</p>
+<blockquote>
+<p>Area of the box is : 200<br><br>test.rb:42: protected method `printArea’ called for #<br></p>
+<p><box:0xb7f11280 @height="20," @width="10"> (NoMethodError)</box:0xb7f11280></p>
+</blockquote>
+<p><strong>继承</strong></p>
+<p>继承，是面向对象编程中最重要的概念之一。继承允许我们根据另一个类定义一个类，这样使得创建和维护应用程序变得更加容易。<br>继承有助于重用代码和快速执行，不幸的是，Ruby 不支持多继承，但是 Ruby 支持 mixins。mixin 就像是多继承的一个特定实现，在多继承中，只有接口部分是可继承的。<br>当创建类时，程序员可以直接指定新类继承自某个已有类的成员，这样就不用从头编写新的数据成员和成员函数。这个已有类被称为基类或父类，新类被称为派生类或子类。<br>Ruby 也提供了子类化的概念，子类化即继承，下面的实例解释了这个概念。扩展一个类的语法非常简单。只要添加一个 &lt; 字符和父类的名称到类语句中即可.</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div></pre></td><td class="code"><pre><div class="line"><span class="comment">#!/usr/bin/ruby -w</span></div><div class="line"></div><div class="line"><span class="comment"># 定义类</span></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Box</span></span></div><div class="line">   <span class="comment"># 构造器方法</span></div><div class="line">   <span class="function"><span class="keyword">def</span> <span class="title">initialize</span><span class="params">(w,h)</span></span></div><div class="line">      @width, @height = w, h</div><div class="line">   <span class="keyword">end</span></div><div class="line">   <span class="comment"># 实例方法</span></div><div class="line">   <span class="function"><span class="keyword">def</span> <span class="title">getArea</span></span></div><div class="line">      @width * @height</div><div class="line">   <span class="keyword">end</span></div><div class="line"><span class="keyword">end</span></div><div class="line"></div><div class="line"><span class="comment"># 定义子类</span></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">BigBox</span> &lt; Box</span></div><div class="line"></div><div class="line">   <span class="comment"># 添加一个新的实例方法</span></div><div class="line">   <span class="function"><span class="keyword">def</span> <span class="title">printArea</span></span></div><div class="line">      @area = @width * @height</div><div class="line">      puts <span class="string">"Big box area is : #@area"</span></div><div class="line">   <span class="keyword">end</span></div><div class="line"><span class="keyword">end</span></div><div class="line"></div><div class="line"><span class="comment"># 创建对象</span></div><div class="line">box = BigBox.new(<span class="number">10</span>, <span class="number">20</span>)</div><div class="line"></div><div class="line"><span class="comment"># 输出面积</span></div><div class="line">box.printArea()</div></pre></td></tr></table></figure>
+<p><strong>方法重载</strong></p>
+<p>直接在新类中重写方法.</p>
+<p><strong>运算符重载</strong></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yunfengsa.github.io/2015/11/03/ruby-gaojibiancheng/" data-id="ciwemdoer000nzsri8rbbrnb1" class="article-share-link">Delen</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2015/11/05/rails-first/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Nieuwer</strong>
+      <div class="article-nav-title">
+        
+          Rails_on_windows_纪念一下坑爹之旅
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2015/10/30/ruby-jichuyufa/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Ouder</strong>
+      <div class="article-nav-title">Ruby_基础语法总结篇</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categorieën</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Chromium/">Chromium</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Database/">Database</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Markdown/">Markdown</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Ruby/">Ruby</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/android/">android</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/gradle/">gradle</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/ndk/">ndk</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/octopress/">octopress</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/opencv/">opencv</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/rails/">rails</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/ruby/">ruby</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/rx/">rx</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/weex/">weex</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/设计模式/">设计模式</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Labels</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/binder/">binder</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/surface/">surface</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/binder/" style="font-size: 10px;">binder</a> <a href="/tags/surface/" style="font-size: 10px;">surface</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archieven</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/12/">December 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">November 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/10/">October 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">May 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">April 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">January 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">December 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">November 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">October 2015</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recente berichten</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2016/12/07/hello-world/">Hello World</a>
+          </li>
+        
+          <li>
+            <a href="/2016/11/28/weex-and-vue-and-so-on/">开启Vue学习之旅</a>
+          </li>
+        
+          <li>
+            <a href="/2016/11/07/rx-to-retrofit-and-so-on/">Rx的进攻路线（选取比较好的文章）</a>
+          </li>
+        
+          <li>
+            <a href="/2016/11/06/find-a-way-to-gesturerecognization/">Find A Way to Gesture Recognization</a>
+          </li>
+        
+          <li>
+            <a href="/2016/11/02/camkeandopencv/">CMake编译NDK，以及在OpenCV中的应用</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2016 yunfengsa<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>

@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>RxJava知多少 | 云枫飒的笔记BLOG</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="RxJava是一个响应式编程框架，采用观察者设计模式。RxJava在android开发中变得越来越流行。RxAndroid在RXjava基础上增加了android的支持。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="RxJava知多少">
+<meta property="og:url" content="http://yunfengsa.github.io/2016/01/04/rxjava/index.html">
+<meta property="og:site_name" content="云枫飒的笔记BLOG">
+<meta property="og:description" content="RxJava是一个响应式编程框架，采用观察者设计模式。RxJava在android开发中变得越来越流行。RxAndroid在RXjava基础上增加了android的支持。">
+<meta property="og:updated_time" content="2016-12-07T07:33:47.856Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="RxJava知多少">
+<meta name="twitter:description" content="RxJava是一个响应式编程框架，采用观察者设计模式。RxJava在android开发中变得越来越流行。RxAndroid在RXjava基础上增加了android的支持。">
+  
+    <link rel="alternate" href="/atom.xml" title="云枫飒的笔记BLOG" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">云枫飒的笔记BLOG</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">个人技术记录</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Zoeken"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yunfengsa.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-rxjava" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/01/04/rxjava/" class="article-date">
+  <time datetime="2016-01-04T06:34:25.000Z" itemprop="datePublished">2016-01-04</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/android/">android</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      RxJava知多少
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>RxJava是一个响应式编程框架，采用观察者设计模式。RxJava在android开发中变得越来越流行。<a href="https://github.com/ReactiveX/RxAndroid" target="_blank" rel="external">RxAndroid</a>在<a href="https://github.com/ReactiveX/RxJava" target="_blank" rel="external">RXjava</a>基础上增加了android的支持。<br><a id="more"></a></p>
+<p>##基础</p>
+<p>既然是观察者模式，自然少不了观察者（Subscribers）和被观察者（Observables）。一个Observable可以发出零个或者多个事件，知道结束或者出错。每发出一个事件，就会调用它的Subscriber的onnext方法，最后调用Subscriber.onNext或者Subscriber.onError结束。</p>
+<p>Rxjava的看起来很想设计模式中的观察者模式，但是有一点明显不同，那就是如果一个Observerble没有任何的的Subscriber，那么这个Observable是不会发出任何事件的。</p>
+<p>####Hello World</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">Observable&lt;String&gt; myObservable = Observable.create(  </div><div class="line">    <span class="keyword">new</span> Observable.OnSubscribe&lt;String&gt;() &#123;  </div><div class="line">        <span class="meta">@Override</span>  </div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">call</span><span class="params">(Subscriber&lt;? <span class="keyword">super</span> String&gt; sub)</span> </span>&#123;  </div><div class="line">            sub.onNext(<span class="string">"Hello, world!"</span>);  </div><div class="line">            sub.onCompleted();  </div><div class="line">        &#125;  </div><div class="line">    &#125;  </div><div class="line">);</div></pre></td></tr></table></figure>
+<p>这里定义的Observable对象仅仅发出一个Hello World字符串，然后就结束了。接着我们创建一个Subscriber来处理Observable对象发出的字符串。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">Subscriber&lt;String&gt; mySubscriber = <span class="keyword">new</span> Subscriber&lt;String&gt;() &#123;  </div><div class="line">    <span class="meta">@Override</span>  </div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onNext</span><span class="params">(String s)</span> </span>&#123; System.out.println(s); &#125;  </div><div class="line">  </div><div class="line">    <span class="meta">@Override</span>  </div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onCompleted</span><span class="params">()</span> </span>&#123; &#125;  </div><div class="line">  </div><div class="line">    <span class="meta">@Override</span>  </div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onError</span><span class="params">(Throwable e)</span> </span>&#123; &#125;  </div><div class="line">&#125;;</div></pre></td></tr></table></figure>
+<p>这里subscriber仅仅就是打印observable发出的字符串。通过subscribe函数就可以将我们定义的myObservable对象和mySubscriber对象关联起来，这样就完成了subscriber对observable的订阅。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">myObservable.subscribe(mySubscriber);</div></pre></td></tr></table></figure>
+<p>一旦mySubscriber订阅了myObservable，myObservable就是调用mySubscriber对象的onNext和onComplete方法，mySubscriber就会打印出Hello World！</p>
+<p><strong>更简洁的写法</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">Observable.just(<span class="string">"Hello, world!"</span>)  <span class="comment">//.just用来创建只发出一个事件就结束的Observable对象。</span></div><div class="line">    .subscribe(<span class="keyword">new</span> Action1&lt;String&gt;() &#123;  <span class="comment">/*subscribe有一个接收三个Action1类型的参数，分别对用OnNext，OnComplete，OnError 这里我们只取第一个参数*/</span></div><div class="line">        <span class="meta">@Override</span>  </div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">call</span><span class="params">(String s)</span> </span>&#123;  </div><div class="line">              System.out.println(s);  </div><div class="line">        &#125;  </div><div class="line">    &#125;);</div></pre></td></tr></table></figure>
+<p>使用Java8的lambda可以使代码更加简洁</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">Observable.just(<span class="string">"Hello, world!"</span>)  </div><div class="line">    .subscribe(s -&gt; System.out.println(s));</div></pre></td></tr></table></figure>
+<p>关于<a href="http://yunfengsa.github.io/blog/2016/01/04/labmbdaanddelegate/">Lambda点击此</a></p>
+<p>如果我们想对<em>Hello,world!</em>进行变换该怎么做呢？</p>
+<p><strong>操作符</strong></p>
+<p>操作符就是为了解决对Observable对象的变换的问题，操作符用于在Observable和最终的Subscriber之间修改Observable发出的事件。RxJava提供了很多很有用的操作符。<br>比如map操作符，就是用来把把一个事件转换为另一个事件的。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">Observable.just(<span class="string">"Hello, world!"</span>)  </div><div class="line">  .map(<span class="keyword">new</span> Func1&lt;String, String&gt;() &#123;  </div><div class="line">      <span class="meta">@Override</span>  </div><div class="line">      <span class="function"><span class="keyword">public</span> String <span class="title">call</span><span class="params">(String s)</span> </span>&#123;  </div><div class="line">          <span class="keyword">return</span> s + <span class="string">" -Dan"</span>;  </div><div class="line">      &#125;  </div><div class="line">  &#125;)  </div><div class="line">  .subscribe(s -&gt; System.out.println(s));</div></pre></td></tr></table></figure>
+<p>使用lambda可以简化为</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">Observable.just(<span class="string">"Hello, world!"</span>)  </div><div class="line">    .map(s -&gt; s + <span class="string">" -Dan"</span>)  </div><div class="line">    .subscribe(s -&gt; System.out.println(s));</div></pre></td></tr></table></figure>
+<p><strong>map操作符进阶</strong></p>
+<p>map操作符更有趣的一点是它不必返回Observable对象返回的类型，你可以使用map操作符返回一个发出新的数据类型的observable对象。</p>
+<p>比如上面的例子中，subscriber并不关心返回的字符串，而是想要字符串的hash值</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">Observable.just(<span class="string">"Hello, world!"</span>)  </div><div class="line">    .map(<span class="keyword">new</span> Func1&lt;String, Integer&gt;() &#123;  </div><div class="line">        <span class="meta">@Override</span>  </div><div class="line">        <span class="function"><span class="keyword">public</span> Integer <span class="title">call</span><span class="params">(String s)</span> </span>&#123;  </div><div class="line">            <span class="keyword">return</span> s.hashCode();  </div><div class="line">        &#125;  </div><div class="line">    &#125;)  </div><div class="line">    .subscribe(i -&gt; System.out.println(Integer.toString(i)));</div></pre></td></tr></table></figure>
+<p>很有趣吧？我们初始的Observable返回的是字符串，最终的Subscriber收到的却是Integer，当然使用lambda可以进一步简化代码：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">Observable.just(<span class="string">"Hello, world!"</span>)  </div><div class="line">    .map(s -&gt; s.hashCode())  </div><div class="line">    .subscribe(i -&gt; System.out.println(Integer.toString(i)));</div></pre></td></tr></table></figure>
+<p>前面说过，Subscriber做的事情越少越好，我们再增加一个map操作符</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">Observable.just(<span class="string">"Hello, world!"</span>)  </div><div class="line">    .map(s -&gt; s.hashCode())  </div><div class="line">    .map(i -&gt; Integer.toString(i))  </div><div class="line">    .subscribe(s -&gt; System.out.println(s));</div></pre></td></tr></table></figure>
+<p><strong>重要两点：</strong></p>
+<p>1.Observable和Subscriber可以做任何事情<br>Observable可以是一个数据库查询，Subscriber用来显示查询结果；Observable可以是屏幕上的点击事件，Subscriber用来响应点击事件；Observable可以是一个网络请求，Subscriber用来显示请求结果。</p>
+<p>2.Observable和Subscriber是独立于中间的变换过程的。<br>在Observable和Subscriber中间可以增减任何数量的map。整个系统是高度可组合的，操作数据是一个很简单的过程。</p>
+<p>##RxJava进阶（操作符）</p>
+<p>Rxjava的强大特性来自于它所定义的操作符</p>
+<p><strong>例子：</strong></p>
+<p>假设一个方法根据输入的字符串返回一个网站的url列表</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">Observable&lt;List&lt;String&gt;&gt; query(String text);<span class="comment">//根据输入text返回一个List&lt;String&gt;</span></div></pre></td></tr></table></figure>
+<p>假如我们要显示查询的结果，可以这样写：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">query(<span class="string">"Hello, world!"</span>)  </div><div class="line">    .subscribe(urls -&gt; &#123;  </div><div class="line">        <span class="keyword">for</span> (String url : urls) &#123;  </div><div class="line">            System.out.println(url);  </div><div class="line">        &#125;  </div><div class="line">    &#125;);  <span class="comment">//很简单</span></div></pre></td></tr></table></figure>
+<p>我们有更简单的方法取代for each遍历！那就是<em>Observable.from()</em>，他的接收一个集合作为输入，然后每次输出一个元素给subscriber</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">query(<span class="string">"Hello, world!"</span>)  </div><div class="line">    .subscribe(urls -&gt; &#123;  </div><div class="line">        Observable.from(urls)  </div><div class="line">            .subscribe(url -&gt; System.out.println(url));  </div><div class="line">    &#125;);</div></pre></td></tr></table></figure>
+<p>上述代码中，出现了两次输出，比较冗杂，我们可以进一步改进</p>
+<p>使用<strong>flatmap</strong>。</p>
+<p>Observable.flatmap接收一个Observable的输出作为输入，同时输出另外一个Observable。(一定要注意我们query方法返回的类型是Observable<list<string>&gt;)!</list<string></p>
+<p>代码：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">query(<span class="string">"Hello, world!"</span>)  </div><div class="line">    .flatMap(<span class="keyword">new</span> Func1&lt;List&lt;String&gt;, Observable&lt;String&gt;&gt;() &#123;  </div><div class="line">        <span class="meta">@Override</span>  </div><div class="line">        <span class="function"><span class="keyword">public</span> Observable&lt;String&gt; <span class="title">call</span><span class="params">(List&lt;String&gt; urls)</span> </span>&#123;  </div><div class="line">            <span class="keyword">return</span> Observable.from(urls);  </div><div class="line">        &#125;  </div><div class="line">    &#125;)  </div><div class="line">    .subscribe(url -&gt; System.out.println(url));</div></pre></td></tr></table></figure>
+<p>使用lambda表达式：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">query(<span class="string">"Hello,world"</span>)</div><div class="line">	.flatMap(urls-&gt;Observable.from(urls))</div><div class="line">		.subscribe(url-&gt;System.out.prinln(url));</div></pre></td></tr></table></figure>
+<p>这里有必要理一下flatMap，flatMap输出的是一个新的Observable，这个Observable正是subscribe想要接收的，之前接收的是List<string>,而是收到一些列单个的字符串，就像observable.from输出一样。<em>这也就理解了flatmap和map的区别。无非是flatmap返回的类型是Observable类型，而map则是基本类型。</em></string></p>
+<p>我们再引入一个方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="function">Observable&lt;String&gt; <span class="title">getTitle</span><span class="params">(String URL)</span></span>;</div></pre></td></tr></table></figure>
+<p>注意返回的类型是Observable类型。这个时候就要使用flatMap（）可以解决这个问题。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">query(<span class="string">"Hello, world!"</span>)  </div><div class="line">    .flatMap(urls -&gt; Observable.from(urls))  </div><div class="line">    .flatMap(<span class="keyword">new</span> Func1&lt;String, Observable&lt;String&gt;&gt;() &#123;  </div><div class="line">        <span class="meta">@Override</span>  </div><div class="line">        <span class="function"><span class="keyword">public</span> Observable&lt;String&gt; <span class="title">call</span><span class="params">(String url)</span> </span>&#123;  </div><div class="line">            <span class="keyword">return</span> getTitle(url);  </div><div class="line">        &#125;  </div><div class="line">    &#125;)  </div><div class="line">    .subscribe(title -&gt; System.out.println(title));</div></pre></td></tr></table></figure>
+<p>使用lambda：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">query(<span class="string">"Hello,world!"</span>)</div><div class="line">	.flatmap(urls-&gt;Observable.from(urls))</div><div class="line">	.flatmap(url-&gt;getTitle(url))</div><div class="line">		.subscribe(title-&gt;System.out.prinln(title))</div></pre></td></tr></table></figure>
+<p><strong>其他相关操作符</strong></p>
+<p>filter（）：输入和输出相同的元素，过滤不满足条件的元素。</p>
+<p>take（）：输出最多指定数量的结果。</p>
+<p>doOnNext（）：允许我们在每次输出一个元素之前做一些额外的事情，比如这里的保存标题。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">query(<span class="string">"Hello, world!"</span>)  </div><div class="line">    .flatMap(urls -&gt; Observable.from(urls))  </div><div class="line">    .flatMap(url -&gt; getTitle(url))  </div><div class="line">    .filter(title -&gt; title != <span class="keyword">null</span>)  </div><div class="line">    .take(<span class="number">5</span>)  </div><div class="line">    .doOnNext(title -&gt; saveTitle(title))  </div><div class="line">    .subscribe(title -&gt; System.out.println(title));</div></pre></td></tr></table></figure>
+<p>我们在doOnNext（）方法中保存了title但是对于subscribe来说，我们并不知道这些，它只是认为自己在接收一个Observable<string>对象。良好的封装性带来了编码的便利！</string></p>
+<p>##响应式的好处</p>
+<p><strong>错误处理</strong></p>
+<p>每一个observable对象在终结的时候都会调用onCompleted()或者onError()方法。</p>
+<p>这样的优点在于：</p>
+<p>1.只要有异常发生onError()一定会被调用</p>
+<p>这极大的简化了错误处理。只需要在一个地方处理错误即可以。</p>
+<p>2.操作符不需要处理异常</p>
+<p>将异常处理交给订阅者来做，Observerable的操作符调用链中一旦有一个抛出了异常，就会直接执行onError()方法。</p>
+<p>3.你能够知道什么时候订阅者已经接收了全部的数据。</p>
+<p>知道什么时候任务结束能够帮助简化代码的流程。（虽然有可能Observable对象永远不会结束）</p>
+<p>我觉得这种错误处理方式比传统的错误处理更简单。传统的错误处理中，通常是在每个回调中处理错误。这不仅导致了重复的代码，并且意味着每个回调都必须知道如何处理错误，你的回调代码将和调用者紧耦合在一起。</p>
+<p>使用RxJava，Observable对象根本不需要知道如何处理错误！操作符也不需要处理错误状态-一旦发生错误，就会跳过当前和后续的操作符。所有的错误处理都交给订阅者来做。</p>
+<p><strong>调度器</strong></p>
+<p>假设你要进行网络请求，那么需要新开启一个线程，那么问题来了！！</p>
+<p>使用RxJava，你可以使用subscribeOn()指定观察者代码运行的线程，使用observerOn()指定订阅者运行的线程：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">myObservableServices.retrieveImage(url)</div><div class="line">    .subscribeOn(Schedulers.io())</div><div class="line">    .observeOn(AndroidSchedulers.mainThread())</div><div class="line">    .subscribe(bitmap -&gt; myImageView.setImageBitmap(bitmap));</div></pre></td></tr></table></figure>
+<p>是不是很简单？任何在我的Subscriber前面执行的代码都是在I/O线程中运行。最后，操作view的代码在主线程中运行.</p>
+<p>最棒的是我可以把subscribeOn()和observerOn()添加到任何Observable对象上。这两个也是操作符！。我不需要关心Observable对象以及它上面有哪些操作符。仅仅运用这两个操作符就可以实现在不同的线程中调度。</p>
+<p>如果使用AsyncTask或者其他类似的，我将不得不仔细设计我的代码，找出需要并发执行的部分。使用RxJava，我可以保持代码不变，仅仅在需要并发的时候调用这两个操作符就可以。</p>
+<p><strong>订阅(Subscriptions)</strong></p>
+<p>当调用Observable.subscribe(),会返回一个Subscription对象。这个对象代表了被观察者和订阅者之间的联系。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">ubscription subscription = Observable.just(<span class="string">"Hello, World!"</span>)</div><div class="line">    .subscribe(s -&gt; System.out.println(s));</div></pre></td></tr></table></figure>
+<p>你可以在后面使用这个Subscription对象来操作被观察者和订阅者之间的联系.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">subscription.unsubscribe();</div><div class="line">System.out.println(<span class="string">"Unsubscribed="</span> + subscription.isUnsubscribed());</div></pre></td></tr></table></figure>
+<p>RxJava的另外一个好处就是它处理unsubscribing的时候，会停止整个调用链。如果你使用了一串很复杂的操作符，调用unsubscribe将会在他当前执行的地方终止。不需要做任何额外的工作！</p>
+<p>##<strong>RxAndroid：android中的相应编程</strong></p>
+<p>RxAndroid是RxJava的一个针对Android的平台扩展，它包含了一些能够简化Android开发的工具。</p>
+<p>首先，<em>AndroidSchedulers</em>提供了一个针对android的线程系统的调度器。需要在UI线程中运行某些代码？</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">retrofitService.getImage(url)</div><div class="line">    .subscribeOn(Schedulers.io())</div><div class="line">    .observeOn(AndroidSchedulers.mainThread())</div><div class="line">    .subscribe(bitmap -&gt; myImageView.setImageBitmap(bitmap));</div></pre></td></tr></table></figure>
+<p>如果你已经创建了自己的Handler，你可以使用HandlerThreadScheduler1将一个调度器链接到你的handler上。</p>
+<p>接着要介绍的就是AndroidObservable，它提供了跟多的功能来配合Android的生命周期。bindActivity()和bindFragment()方法默认使用AndroidSchedulers.mainThread()来执行观察者代码，这两个方法会在Activity或者Fragment结束的时候通知被观察者停止发出新的消息。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">AndroidObservable.bindActivity(<span class="keyword">this</span>, retrofitService.getImage(url))</div><div class="line">    .subscribeOn(Schedulers.io())</div><div class="line">    .subscribe(bitmap -&gt; myImageView.setImageBitmap(bitmap);</div></pre></td></tr></table></figure>
+<p><em>AndroidObservable.fromBroadcast()</em>方法，它允许你创建一个类似BroadcastReceiver的Observable对象。下面的例子展示了如何在网络变化的时候被通知到：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">IntentFilter filter = <span class="keyword">new</span> IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);</div><div class="line">AndroidObservable.fromBroadcast(context, filter)</div><div class="line">    .subscribe(intent -&gt; handleConnectivityChange(intent));</div></pre></td></tr></table></figure>
+<p>最后要介绍的是<em>ViewObservable</em>,使用它可以给View添加了一些绑定。如果你想在每次点击view的时候都收到一个事件，可以使用ViewObservable.clicks()，或者你想监听TextView的内容变化，可以使用ViewObservable.text()。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">ViewObservable.clicks(mCardNameEditText, <span class="keyword">false</span>)</div><div class="line">    .subscribe(view -&gt; handleClick(view));</div></pre></td></tr></table></figure>
+<p><strong>Retrofit</strong></p>
+<p>关于Retrofit可以参考这两边文章（<a href="http://square.github.io/retrofit/" target="_blank" rel="external">官方文档</a>、<a href="http://www.cnblogs.com/angeldevil/p/3757335.html" target="_blank" rel="external">Retrofit的基本原理</a>）。</p>
+<p>Retrofit库内置了对Rxjava的支持，通常可以通过一个Callback对象来获取异步的结果：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="meta">@GET</span>(<span class="string">"/user/&#123;id&#125;/photo"</span>)</div><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">getUserPhoto</span><span class="params">(@Path(<span class="string">"id"</span>)</span> <span class="keyword">int</span> id, Callback&lt;Photo&gt; cb)</span>;</div></pre></td></tr></table></figure>
+<p>使用RxJava，你可以直接返回一个Observable对象。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="meta">@GET</span>(<span class="string">"/user/&#123;id&#125;/photo"</span>)</div><div class="line"><span class="function">Observable&lt;Photo&gt; <span class="title">getUserPhoto</span><span class="params">(@Path(<span class="string">"id"</span>)</span> <span class="keyword">int</span> id)</span>;</div></pre></td></tr></table></figure>
+<p>现在你可以随意使用Observable对象了。你不仅可以获取数据，还可以进行变换。<br>Retrofit对Observable的支持使得它可以很简单的将多个REST请求结合起来。比如我们有一个请求是获取照片的，还有一个请求是获取元数据的，我们就可以将这两个请求并发的发出，并且等待两个结果都返回之后再做处理：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">Observable.zip(</div><div class="line">    service.getUserPhoto(id),</div><div class="line">    service.getPhotoMetadata(id),</div><div class="line">    (photo, metadata) -&gt; createPhotoWithData(photo, metadata))</div><div class="line">    .subscribe(photoWithData -&gt; showPhoto(photoWithData));</div></pre></td></tr></table></figure>
+<p>在第二篇里我展示过一个类似的例子（使用flatMap()）。这里我只是想展示以下使用RxJava+Retrofit可以多么简单地组合多个REST请求。</p>
+<p><strong>如何让一个不支持Observable的对象的方法返回一个Observable对象</strong></p>
+<p>利用<em>Observable.just()</em>、<em>Observable.defer()</em></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="function"><span class="keyword">private</span> Object <span class="title">oldMethod</span><span class="params">()</span> </span>&#123; ... &#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">public</span> Observable&lt;Object&gt; <span class="title">newMethod</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="keyword">return</span> Observable.just(oldMethod());</div><div class="line">&#125;</div><div class="line"><span class="comment">//这个方法适用于oldMethod执行速度比较快，不会出现阻塞的情况。</span></div></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="function"><span class="keyword">private</span> Object <span class="title">slowBlockingMethod</span><span class="params">()</span> </span>&#123; ... &#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">public</span> Observable&lt;Object&gt; <span class="title">newMethod</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="keyword">return</span> Observable.defer(() -&gt; Observable.just(slowBlockingMethod()));</div><div class="line">&#125;</div><div class="line"><span class="comment">//这个方法 即使slowBlockingMethod执行缓慢，阻塞，newMethod的调用也不会阻塞，除非你订阅返回的Observable对象。</span></div></pre></td></tr></table></figure>
+<p>###生命周期的管理</p>
+<p>这个是难点，主要有两个问题：</p>
+<ul>
+<li>在configuration改变（比如转屏）之后继续之前的Subscription。比如你使用Retrofit发出了一个REST请求，接着想在listview中展示结果。如果在网络请求的时候用户旋转了屏幕怎么办？你当然想继续刚才的请求，但是怎么搞？</li>
+<li>Observable持有Context导致的内存泄露。这个问题是因为创建subscription的时候，以某种方式持有了context的引用，尤其是当你和view交互的时候，这太容易发生！如果Observable没有及时结束，内存占用就会越来越大。 </li>
+</ul>
+<p>这两个问题都没有什么完美解决方案，这里有两个参考：</p>
+<p>1.第一个问题的解决方案就是使用RxJava内置的缓存机制，这样你就可以对同一个Observable对象执行unsubscribe/resubscribe，却不用重复运行得到Observable的代码。cache() (或者 replay())会继续执行网络请求（甚至你调用了unsubscribe也不会停止）。这就是说你可以在Activity重新创建的时候从cache()的返回值中创建一个新的Observable对象。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">Observable&lt;Photo&gt; request = service.getUserPhoto(id).cache();</div><div class="line">Subscription sub = request.subscribe(photo -&gt; handleUserPhoto(photo));</div><div class="line"></div><div class="line"><span class="comment">// ...When the Activity is being recreated...</span></div><div class="line">sub.unsubscribe();</div><div class="line"></div><div class="line"><span class="comment">// ...Once the Activity is recreated...</span></div><div class="line">request.subscribe(photo -&gt; handleUserPhoto(photo));</div></pre></td></tr></table></figure>
+<p>注意，两次sub是使用的同一个缓存的请求。当然在哪里去存储请求的结果还是要你自己来做，和所有其他的生命周期相关的解决方案一样，必须在生命周期外的某个地方存储。（retained fragment或者单例等等）。</p>
+<p>2.第二个问题的解决方案就是在生命周期的某个时刻取消订阅。一个很常见的模式就是使用CompositeSubscription来持有所有的Subscriptions，然后在onDestroy()或者onDestroyView()里取消所有的订阅。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="keyword">private</span> CompositeSubscription mCompositeSubscription</div><div class="line">    = <span class="keyword">new</span> CompositeSubscription();</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">doSomething</span><span class="params">()</span> </span>&#123;</div><div class="line">    mCompositeSubscription.add(</div><div class="line">        AndroidObservable.bindActivity(<span class="keyword">this</span>, Observable.just(<span class="string">"Hello, World!"</span>))</div><div class="line">        .subscribe(s -&gt; System.out.println(s)));</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="meta">@Override</span></div><div class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onDestroy</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="keyword">super</span>.onDestroy();</div><div class="line"></div><div class="line">    mCompositeSubscription.unsubscribe();</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>你可以在Activity/Fragment的基类里创建一个CompositeSubscription对象，在子类中使用它。<strong>注意:</strong> 一旦你调用了CompositeSubscription.unsubscribe()，这个CompositeSubscription对象就不可用了, 如果你还想使用CompositeSubscription，就必须在创建一个新的对象了。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yunfengsa.github.io/2016/01/04/rxjava/" data-id="ciwemdof60014zsri52jldbh3" class="article-share-link">Delen</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2016/01/07/okhttp/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Nieuwer</strong>
+      <div class="article-nav-title">
+        
+          Okhttp，不可不深入（封装、https、源码分析）
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2016/01/04/labmbdaanddelegate/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Ouder</strong>
+      <div class="article-nav-title">匿名委托的Lambda</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categorieën</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Chromium/">Chromium</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Database/">Database</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Markdown/">Markdown</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Ruby/">Ruby</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/android/">android</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/gradle/">gradle</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/ndk/">ndk</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/octopress/">octopress</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/opencv/">opencv</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/rails/">rails</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/ruby/">ruby</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/rx/">rx</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/weex/">weex</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/设计模式/">设计模式</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Labels</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/binder/">binder</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/surface/">surface</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/binder/" style="font-size: 10px;">binder</a> <a href="/tags/surface/" style="font-size: 10px;">surface</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archieven</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/12/">December 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">November 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/10/">October 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">May 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">April 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">January 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">December 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">November 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">October 2015</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recente berichten</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2016/12/07/hello-world/">Hello World</a>
+          </li>
+        
+          <li>
+            <a href="/2016/11/28/weex-and-vue-and-so-on/">开启Vue学习之旅</a>
+          </li>
+        
+          <li>
+            <a href="/2016/11/07/rx-to-retrofit-and-so-on/">Rx的进攻路线（选取比较好的文章）</a>
+          </li>
+        
+          <li>
+            <a href="/2016/11/06/find-a-way-to-gesturerecognization/">Find A Way to Gesture Recognization</a>
+          </li>
+        
+          <li>
+            <a href="/2016/11/02/camkeandopencv/">CMake编译NDK，以及在OpenCV中的应用</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2016 yunfengsa<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>

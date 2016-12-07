@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>深入理解系列：Surface | 云枫飒的笔记BLOG</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="1.深入理解JNI
+2.深入理解Zygote
+3.深入理解常见类（未完成）
+4.深入理解Binder
+5.深入理解Autdio（未完成）
+6.深入理解Surface">
+<meta property="og:type" content="article">
+<meta property="og:title" content="深入理解系列：Surface">
+<meta property="og:url" content="http://yunfengsa.github.io/2016/04/22/shenruandroid-surface/index.html">
+<meta property="og:site_name" content="云枫飒的笔记BLOG">
+<meta property="og:description" content="1.深入理解JNI
+2.深入理解Zygote
+3.深入理解常见类（未完成）
+4.深入理解Binder
+5.深入理解Autdio（未完成）
+6.深入理解Surface">
+<meta property="og:image" content="http://yunfengsa.github.io/images/surface/surfacecreat.JPG">
+<meta property="og:image" content="http://yunfengsa.github.io/images/surface/sf.JPG">
+<meta property="og:updated_time" content="2016-12-07T07:33:47.872Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="深入理解系列：Surface">
+<meta name="twitter:description" content="1.深入理解JNI
+2.深入理解Zygote
+3.深入理解常见类（未完成）
+4.深入理解Binder
+5.深入理解Autdio（未完成）
+6.深入理解Surface">
+<meta name="twitter:image" content="http://yunfengsa.github.io/images/surface/surfacecreat.JPG">
+  
+    <link rel="alternate" href="/atom.xml" title="云枫飒的笔记BLOG" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">云枫飒的笔记BLOG</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">个人技术记录</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Zoeken"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yunfengsa.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-shenruandroid-surface" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/04/22/shenruandroid-surface/" class="article-date">
+  <time datetime="2016-04-22T07:04:35.000Z" itemprop="datePublished">2016-04-22</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/android/">android</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      深入理解系列：Surface
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><a href="www.google.com"><h3>1.深入理解JNI</h3></a></p>
+<p><a href="http://yunfengsa.github.io/blog/2016/04/13/shenruandroid/"><h3>2.深入理解Zygote</h3></a></p>
+<p><a href="www.google.com"><h3>3.深入理解常见类（未完成）</h3></a></p>
+<p><a href="http://yunfengsa.github.io/blog/2016/04/14/shenruandroid-binder/"><h3>4.深入理解Binder</h3></a></p>
+<p><a href="www.google.com"><h3>5.深入理解Autdio（未完成）</h3></a></p>
+<p><a href="http://yunfengsa.github.io/blog/2016/04/22/shenruandroid-surface/"><h3>6.深入理解Surface</h3></a></p>
+<a id="more"></a>
+<p>##概述<br>首先surface就像UI的画布，我们知道android一般使用Skia绘制二维图像，利用OpenGL绘制三维图像，最终都是需要与Surface交互，而与Surface密不可分的是SurfaceFlinger。</p>
+<p>###Acitvity的实现</p>
+<p>activity现实之前，他是怎么创建来的，以及怎么维护生命周期的呢？在zygote讲解之中，知道zygote有一个socketserver端是否还记得呢？他在响应之后会fork一个进程，这个进程就是app对应的进程，它的入口函数就是ActivityThread类的main函数，ActivityThread类中有一个handleLaunchActivity函数，它就是创建Activity的地方。</p>
+<p>ActitivtyThread.java</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">handleLaunchActivity</span><span class="params">(ActivityClientRecord r, Intent customIntent)</span> </span>&#123;</div><div class="line">        <span class="comment">// If we are getting ready to gc after going to the background, well</span></div><div class="line">        <span class="comment">// we are back active so skip it.</span></div><div class="line">        unscheduleGcIdler();</div><div class="line">        mSomeActivitiesChanged = <span class="keyword">true</span>;</div><div class="line"></div><div class="line">        <span class="keyword">if</span> (r.profilerInfo != <span class="keyword">null</span>) &#123;</div><div class="line">            mProfiler.setProfiler(r.profilerInfo);</div><div class="line">            mProfiler.startProfiling();</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="comment">// Make sure we are running with the most recent config.</span></div><div class="line">        handleConfigurationChanged(<span class="keyword">null</span>, <span class="keyword">null</span>);</div><div class="line"></div><div class="line">        <span class="keyword">if</span> (localLOGV) Slog.v(</div><div class="line">            TAG, <span class="string">"Handling launch of "</span> + r);</div><div class="line"></div><div class="line">        <span class="comment">// Initialize before creating the activity</span></div><div class="line">        WindowManagerGlobal.initialize();</div><div class="line"></div><div class="line">        Activity a = performLaunchActivity(r, customIntent);  <span class="comment">//创建一个Acitivty</span></div><div class="line"></div><div class="line">        <span class="keyword">if</span> (a != <span class="keyword">null</span>) &#123;</div><div class="line">            r.createdConfig = <span class="keyword">new</span> Configuration(mConfiguration);</div><div class="line">            Bundle oldState = r.state;</div><div class="line">            handleResumeActivity(r.token, <span class="keyword">false</span>, r.isForward,</div><div class="line">                    !r.activity.mFinished &amp;&amp; !r.startsNotResumed);  <span class="comment">//acitivty如果已经存在的情况，handleResumeActivity，有没有想到生命周期</span></div><div class="line">            <span class="keyword">if</span> (!r.activity.mFinished &amp;&amp; r.startsNotResumed) &#123;</div><div class="line">                <span class="comment">// The activity manager actually wants this one to start out</span></div><div class="line">                <span class="comment">// paused, because it needs to be visible but isn't in the</span></div><div class="line">                <span class="comment">// foreground.  We accomplish this by going through the</span></div><div class="line">                <span class="comment">// normal startup (because activities expect to go through</span></div><div class="line">                <span class="comment">// onResume() the first time they run, before their window</span></div><div class="line">                <span class="comment">// is displayed), and then pausing it.  However, in this case</span></div><div class="line">                <span class="comment">// we do -not- need to do the full pause cycle (of freezing</span></div><div class="line">                <span class="comment">// and such) because the activity manager assumes it can just</span></div><div class="line">                <span class="comment">// retain the current state it has.</span></div><div class="line">                <span class="keyword">try</span> &#123;</div><div class="line">                    r.activity.mCalled = <span class="keyword">false</span>;</div><div class="line">                    mInstrumentation.callActivityOnPause(r.activity);</div><div class="line">                    <span class="comment">// We need to keep around the original state, in case</span></div><div class="line">                    <span class="comment">// we need to be created again.  But we only do this</span></div><div class="line">                    <span class="comment">// for pre-Honeycomb apps, which always save their state</span></div><div class="line">                    <span class="comment">// when pausing, so we can not have them save their state</span></div><div class="line">                    <span class="comment">// when restarting from a paused state.  For HC and later,</span></div><div class="line">                    <span class="comment">// we want to (and can) let the state be saved as the normal</span></div><div class="line">                    <span class="comment">// part of stopping the activity.</span></div><div class="line">                    <span class="keyword">if</span> (r.isPreHoneycomb()) &#123;</div><div class="line">                        r.state = oldState;</div><div class="line">                    &#125;</div><div class="line">                    <span class="keyword">if</span> (!r.activity.mCalled) &#123;</div><div class="line">                        <span class="keyword">throw</span> <span class="keyword">new</span> SuperNotCalledException(</div><div class="line">                            <span class="string">"Activity "</span> + r.intent.getComponent().toShortString() +</div><div class="line">                            <span class="string">" did not call through to super.onPause()"</span>);</div><div class="line">                    &#125;</div><div class="line"></div><div class="line">                &#125; <span class="keyword">catch</span> (SuperNotCalledException e) &#123;</div><div class="line">                    <span class="keyword">throw</span> e;</div><div class="line"></div><div class="line">                &#125; <span class="keyword">catch</span> (Exception e) &#123;</div><div class="line">                    <span class="keyword">if</span> (!mInstrumentation.onException(r.activity, e)) &#123;</div><div class="line">                        <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(</div><div class="line">                                <span class="string">"Unable to pause activity "</span></div><div class="line">                                + r.intent.getComponent().toShortString()</div><div class="line">                                + <span class="string">": "</span> + e.toString(), e);</div><div class="line">                    &#125;</div><div class="line">                &#125;</div><div class="line">                r.paused = <span class="keyword">true</span>;</div><div class="line">            &#125;</div><div class="line">        &#125; <span class="keyword">else</span> &#123;</div><div class="line">            <span class="comment">// If there was an error, for any reason, tell the activity</span></div><div class="line">            <span class="comment">// manager to stop us.</span></div><div class="line">            <span class="keyword">try</span> &#123;</div><div class="line">                ActivityManagerNative.getDefault()</div><div class="line">                    .finishActivity(r.token, Activity.RESULT_CANCELED, <span class="keyword">null</span>, <span class="keyword">false</span>);</div><div class="line">            &#125; <span class="keyword">catch</span> (RemoteException ex) &#123;</div><div class="line">                <span class="comment">// Ignore</span></div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;</div></pre></td></tr></table></figure>
+<p>上述代码分两步走：<br>1.创建Activity</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div><div class="line">110</div><div class="line">111</div><div class="line">112</div><div class="line">113</div><div class="line">114</div><div class="line">115</div><div class="line">116</div><div class="line">117</div><div class="line">118</div><div class="line">119</div><div class="line">120</div><div class="line">121</div><div class="line">122</div><div class="line">123</div><div class="line">124</div><div class="line">125</div><div class="line">126</div><div class="line">127</div><div class="line">128</div><div class="line">129</div><div class="line">130</div><div class="line">131</div><div class="line">132</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="function"><span class="keyword">private</span> Activity <span class="title">performLaunchActivity</span><span class="params">(ActivityClientRecord r, Intent customIntent)</span> </span>&#123;</div><div class="line">        <span class="comment">// System.out.println("##### [" + System.currentTimeMillis() + "] ActivityThread.performLaunchActivity(" + r + ")");</span></div><div class="line"></div><div class="line">        ActivityInfo aInfo = r.activityInfo;</div><div class="line">        <span class="keyword">if</span> (r.packageInfo == <span class="keyword">null</span>) &#123;</div><div class="line">            r.packageInfo = getPackageInfo(aInfo.applicationInfo, r.compatInfo,</div><div class="line">                    Context.CONTEXT_INCLUDE_CODE);</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        ComponentName component = r.intent.getComponent();</div><div class="line">        <span class="keyword">if</span> (component == <span class="keyword">null</span>) &#123;</div><div class="line">            component = r.intent.resolveActivity(</div><div class="line">                mInitialApplication.getPackageManager());</div><div class="line">            r.intent.setComponent(component);</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="keyword">if</span> (r.activityInfo.targetActivity != <span class="keyword">null</span>) &#123;</div><div class="line">            component = <span class="keyword">new</span> ComponentName(r.activityInfo.packageName,</div><div class="line">                    r.activityInfo.targetActivity);</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        Activity activity = <span class="keyword">null</span>;</div><div class="line">        <span class="keyword">try</span> &#123;</div><div class="line">            java.lang.ClassLoader cl = r.packageInfo.getClassLoader();</div><div class="line">            activity = mInstrumentation.newActivity(         <span class="comment">//利用反射创建activity</span></div><div class="line">                    cl, component.getClassName(), r.intent);</div><div class="line">            StrictMode.incrementExpectedActivityCount(activity.getClass());</div><div class="line">            r.intent.setExtrasClassLoader(cl);</div><div class="line">            r.intent.prepareToEnterProcess();</div><div class="line">            <span class="keyword">if</span> (r.state != <span class="keyword">null</span>) &#123;</div><div class="line">                r.state.setClassLoader(cl);</div><div class="line">            &#125;</div><div class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</div><div class="line">            <span class="keyword">if</span> (!mInstrumentation.onException(activity, e)) &#123;</div><div class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(</div><div class="line">                    <span class="string">"Unable to instantiate activity "</span> + component</div><div class="line">                    + <span class="string">": "</span> + e.toString(), e);</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="keyword">try</span> &#123;</div><div class="line">            Application app = r.packageInfo.makeApplication(<span class="keyword">false</span>, mInstrumentation);</div><div class="line"></div><div class="line">            <span class="keyword">if</span> (localLOGV) Slog.v(TAG, <span class="string">"Performing launch of "</span> + r);</div><div class="line">            <span class="keyword">if</span> (localLOGV) Slog.v(</div><div class="line">                    TAG, r + <span class="string">": app="</span> + app</div><div class="line">                    + <span class="string">", appName="</span> + app.getPackageName()</div><div class="line">                    + <span class="string">", pkg="</span> + r.packageInfo.getPackageName()</div><div class="line">                    + <span class="string">", comp="</span> + r.intent.getComponent().toShortString()</div><div class="line">                    + <span class="string">", dir="</span> + r.packageInfo.getAppDir());</div><div class="line"></div><div class="line">            <span class="keyword">if</span> (activity != <span class="keyword">null</span>) &#123;</div><div class="line">                Context appContext = createBaseContextForActivity(r, activity);   <span class="comment">//Activity返回的contex应该就是这</span></div><div class="line">                CharSequence title = r.activityInfo.loadLabel(appContext.getPackageManager());</div><div class="line">                Configuration config = <span class="keyword">new</span> Configuration(mCompatConfiguration);</div><div class="line">                <span class="keyword">if</span> (DEBUG_CONFIGURATION) Slog.v(TAG, <span class="string">"Launching activity "</span></div><div class="line">                        + r.activityInfo.name + <span class="string">" with config "</span> + config);</div><div class="line">                activity.attach(appContext, <span class="keyword">this</span>, getInstrumentation(), r.token,</div><div class="line">                        r.ident, app, r.intent, r.activityInfo, title, r.parent,</div><div class="line">                        r.embeddedID, r.lastNonConfigurationInstances, config,</div><div class="line">                        r.referrer, r.voiceInteractor);</div><div class="line"></div><div class="line">                <span class="keyword">if</span> (customIntent != <span class="keyword">null</span>) &#123;</div><div class="line">                    activity.mIntent = customIntent;</div><div class="line">                &#125;</div><div class="line">                r.lastNonConfigurationInstances = <span class="keyword">null</span>;</div><div class="line">                activity.mStartedActivity = <span class="keyword">false</span>;</div><div class="line">                <span class="keyword">int</span> theme = r.activityInfo.getThemeResource();</div><div class="line">                <span class="keyword">if</span> (theme != <span class="number">0</span>) &#123;</div><div class="line">                    activity.setTheme(theme);</div><div class="line">                &#125;</div><div class="line"></div><div class="line">                activity.mCalled = <span class="keyword">false</span>;</div><div class="line">                <span class="keyword">if</span> (r.isPersistable()) &#123;</div><div class="line">                    mInstrumentation.callActivityOnCreate(activity, r.state, r.persistentState);<span class="comment">//执行oncreate</span></div><div class="line">                &#125; <span class="keyword">else</span> &#123;</div><div class="line">                    mInstrumentation.callActivityOnCreate(activity, r.state);</div><div class="line">                &#125;</div><div class="line">                <span class="keyword">if</span> (!activity.mCalled) &#123;</div><div class="line">                    <span class="keyword">throw</span> <span class="keyword">new</span> SuperNotCalledException(</div><div class="line">                        <span class="string">"Activity "</span> + r.intent.getComponent().toShortString() +</div><div class="line">                        <span class="string">" did not call through to super.onCreate()"</span>);</div><div class="line">                &#125;</div><div class="line">                r.activity = activity;</div><div class="line">                r.stopped = <span class="keyword">true</span>;</div><div class="line">                <span class="keyword">if</span> (!r.activity.mFinished) &#123;</div><div class="line">                    activity.performStart();</div><div class="line">                    r.stopped = <span class="keyword">false</span>;</div><div class="line">                &#125;</div><div class="line">                <span class="keyword">if</span> (!r.activity.mFinished) &#123;</div><div class="line">                    <span class="keyword">if</span> (r.isPersistable()) &#123;</div><div class="line">                        <span class="keyword">if</span> (r.state != <span class="keyword">null</span> || r.persistentState != <span class="keyword">null</span>) &#123;</div><div class="line">                            mInstrumentation.callActivityOnRestoreInstanceState(activity, r.state,</div><div class="line">                                    r.persistentState);</div><div class="line">                        &#125;</div><div class="line">                    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (r.state != <span class="keyword">null</span>) &#123;</div><div class="line">                        mInstrumentation.callActivityOnRestoreInstanceState(activity, r.state);</div><div class="line">                    &#125;</div><div class="line">                &#125;</div><div class="line">                <span class="keyword">if</span> (!r.activity.mFinished) &#123;</div><div class="line">                    activity.mCalled = <span class="keyword">false</span>;</div><div class="line">                    <span class="keyword">if</span> (r.isPersistable()) &#123;</div><div class="line">                        mInstrumentation.callActivityOnPostCreate(activity, r.state,</div><div class="line">                                r.persistentState);</div><div class="line">                    &#125; <span class="keyword">else</span> &#123;</div><div class="line">                        mInstrumentation.callActivityOnPostCreate(activity, r.state);</div><div class="line">                    &#125;</div><div class="line">                    <span class="keyword">if</span> (!activity.mCalled) &#123;</div><div class="line">                        <span class="keyword">throw</span> <span class="keyword">new</span> SuperNotCalledException(</div><div class="line">                            <span class="string">"Activity "</span> + r.intent.getComponent().toShortString() +</div><div class="line">                            <span class="string">" did not call through to super.onPostCreate()"</span>);</div><div class="line">                    &#125;</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">            r.paused = <span class="keyword">true</span>;</div><div class="line"></div><div class="line">            mActivities.put(r.token, r);</div><div class="line"></div><div class="line">        &#125; <span class="keyword">catch</span> (SuperNotCalledException e) &#123;</div><div class="line">            <span class="keyword">throw</span> e;</div><div class="line"></div><div class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</div><div class="line">            <span class="keyword">if</span> (!mInstrumentation.onException(activity, e)) &#123;</div><div class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(</div><div class="line">                    <span class="string">"Unable to start activity "</span> + component</div><div class="line">                    + <span class="string">": "</span> + e.toString(), e);</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="keyword">return</span> activity;</div><div class="line">    &#125;</div></pre></td></tr></table></figure>
+<p>以上代码主要就是利用反射创建activity，调用Acitivty的oncreate函数，维护生命周期。</p>
+<p>2.hanleResumeAvity</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div><div class="line">110</div><div class="line">111</div><div class="line">112</div><div class="line">113</div><div class="line">114</div><div class="line">115</div><div class="line">116</div><div class="line">117</div><div class="line">118</div><div class="line">119</div><div class="line">120</div><div class="line">121</div><div class="line">122</div><div class="line">123</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="function"><span class="keyword">final</span> <span class="keyword">void</span> <span class="title">handleResumeActivity</span><span class="params">(IBinder token,</span></span></div><div class="line">            <span class="keyword">boolean</span> clearHide, <span class="keyword">boolean</span> isForward, <span class="keyword">boolean</span> reallyResume) &#123;</div><div class="line">        <span class="comment">// If we are getting ready to gc after going to the background, well</span></div><div class="line">        <span class="comment">// we are back active so skip it.</span></div><div class="line">        unscheduleGcIdler();</div><div class="line">        mSomeActivitiesChanged = <span class="keyword">true</span>;</div><div class="line"></div><div class="line">        <span class="comment">// TODO Push resumeArgs into the activity for consideration</span></div><div class="line">        ActivityClientRecord r = performResumeActivity(token, clearHide);</div><div class="line"></div><div class="line">        <span class="keyword">if</span> (r != <span class="keyword">null</span>) &#123;</div><div class="line">            <span class="keyword">final</span> Activity a = r.activity;</div><div class="line"></div><div class="line">            <span class="keyword">if</span> (localLOGV) Slog.v(</div><div class="line">                TAG, <span class="string">"Resume "</span> + r + <span class="string">" started activity: "</span> +</div><div class="line">                a.mStartedActivity + <span class="string">", hideForNow: "</span> + r.hideForNow</div><div class="line">                + <span class="string">", finished: "</span> + a.mFinished);</div><div class="line"></div><div class="line">            <span class="keyword">final</span> <span class="keyword">int</span> forwardBit = isForward ?</div><div class="line">                    WindowManager.LayoutParams.SOFT_INPUT_IS_FORWARD_NAVIGATION : <span class="number">0</span>;</div><div class="line"></div><div class="line">            <span class="comment">// If the window hasn't yet been added to the window manager,</span></div><div class="line">            <span class="comment">// and this guy didn't finish itself or start another activity,</span></div><div class="line">            <span class="comment">// then go ahead and add the window.</span></div><div class="line">            <span class="keyword">boolean</span> willBeVisible = !a.mStartedActivity;</div><div class="line">            <span class="keyword">if</span> (!willBeVisible) &#123;</div><div class="line">                <span class="keyword">try</span> &#123;</div><div class="line">                    willBeVisible = ActivityManagerNative.getDefault().willActivityBeVisible(</div><div class="line">                            a.getActivityToken());</div><div class="line">                &#125; <span class="keyword">catch</span> (RemoteException e) &#123;</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">            <span class="keyword">if</span> (r.window == <span class="keyword">null</span> &amp;&amp; !a.mFinished &amp;&amp; willBeVisible) &#123;</div><div class="line">                r.window = r.activity.getWindow();  <span class="comment">//获取Window</span></div><div class="line">                View decor = r.window.getDecorView();  <span class="comment">//获得decorview</span></div><div class="line">                decor.setVisibility(View.INVISIBLE);</div><div class="line">                ViewManager wm = a.getWindowManager();</div><div class="line">                WindowManager.LayoutParams l = r.window.getAttributes();</div><div class="line">                a.mDecor = decor;</div><div class="line">                l.type = WindowManager.LayoutParams.TYPE_BASE_APPLICATION;</div><div class="line">                l.softInputMode |= forwardBit;</div><div class="line">                <span class="keyword">if</span> (a.mVisibleFromClient) &#123;</div><div class="line">                    a.mWindowAdded = <span class="keyword">true</span>;</div><div class="line">                    wm.addView(decor, l); <span class="comment">//将decorview加入到ViewManager</span></div><div class="line">                &#125;</div><div class="line"></div><div class="line">            <span class="comment">// If the window has already been added, but during resume</span></div><div class="line">            <span class="comment">// we started another activity, then don't yet make the</span></div><div class="line">            <span class="comment">// window visible.</span></div><div class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (!willBeVisible) &#123;</div><div class="line">                <span class="keyword">if</span> (localLOGV) Slog.v(</div><div class="line">                    TAG, <span class="string">"Launch "</span> + r + <span class="string">" mStartedActivity set"</span>);</div><div class="line">                r.hideForNow = <span class="keyword">true</span>;</div><div class="line">            &#125;</div><div class="line"></div><div class="line">            <span class="comment">// Get rid of anything left hanging around.</span></div><div class="line">            cleanUpPendingRemoveWindows(r);</div><div class="line"></div><div class="line">            <span class="comment">// The window is now visible if it has been added, we are not</span></div><div class="line">            <span class="comment">// simply finishing, and we are not starting another activity.</span></div><div class="line">            <span class="keyword">if</span> (!r.activity.mFinished &amp;&amp; willBeVisible</div><div class="line">                    &amp;&amp; r.activity.mDecor != <span class="keyword">null</span> &amp;&amp; !r.hideForNow) &#123;</div><div class="line">                <span class="keyword">if</span> (r.newConfig != <span class="keyword">null</span>) &#123;</div><div class="line">                    r.tmpConfig.setTo(r.newConfig);</div><div class="line">                    <span class="keyword">if</span> (r.overrideConfig != <span class="keyword">null</span>) &#123;</div><div class="line">                        r.tmpConfig.updateFrom(r.overrideConfig);</div><div class="line">                    &#125;</div><div class="line">                    <span class="keyword">if</span> (DEBUG_CONFIGURATION) Slog.v(TAG, <span class="string">"Resuming activity "</span></div><div class="line">                            + r.activityInfo.name + <span class="string">" with newConfig "</span> + r.tmpConfig);</div><div class="line">                    performConfigurationChanged(r.activity, r.tmpConfig);</div><div class="line">                    freeTextLayoutCachesIfNeeded(r.activity.mCurrentConfig.diff(r.tmpConfig));</div><div class="line">                    r.newConfig = <span class="keyword">null</span>;</div><div class="line">                &#125;</div><div class="line">                <span class="keyword">if</span> (localLOGV) Slog.v(TAG, <span class="string">"Resuming "</span> + r + <span class="string">" with isForward="</span></div><div class="line">                        + isForward);</div><div class="line">                WindowManager.LayoutParams l = r.window.getAttributes();</div><div class="line">                <span class="keyword">if</span> ((l.softInputMode</div><div class="line">                        &amp; WindowManager.LayoutParams.SOFT_INPUT_IS_FORWARD_NAVIGATION)</div><div class="line">                        != forwardBit) &#123;</div><div class="line">                    l.softInputMode = (l.softInputMode</div><div class="line">                            &amp; (~WindowManager.LayoutParams.SOFT_INPUT_IS_FORWARD_NAVIGATION))</div><div class="line">                            | forwardBit;</div><div class="line">                    <span class="keyword">if</span> (r.activity.mVisibleFromClient) &#123;</div><div class="line">                        ViewManager wm = a.getWindowManager();</div><div class="line">                        View decor = r.window.getDecorView();</div><div class="line">                        wm.updateViewLayout(decor, l);</div><div class="line">                    &#125;</div><div class="line">                &#125;</div><div class="line">                r.activity.mVisibleFromServer = <span class="keyword">true</span>;</div><div class="line">                mNumVisibleActivities++;</div><div class="line">                <span class="keyword">if</span> (r.activity.mVisibleFromClient) &#123;</div><div class="line">                    r.activity.makeVisible();</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line"></div><div class="line">            <span class="keyword">if</span> (!r.onlyLocalRequest) &#123;</div><div class="line">                r.nextIdle = mNewActivities;</div><div class="line">                mNewActivities = r;</div><div class="line">                <span class="keyword">if</span> (localLOGV) Slog.v(</div><div class="line">                    TAG, <span class="string">"Scheduling idle handler for "</span> + r);</div><div class="line">                Looper.myQueue().addIdleHandler(<span class="keyword">new</span> Idler());</div><div class="line">            &#125;</div><div class="line">            r.onlyLocalRequest = <span class="keyword">false</span>;</div><div class="line"></div><div class="line">            <span class="comment">// Tell the activity manager we have resumed.</span></div><div class="line">            <span class="keyword">if</span> (reallyResume) &#123;</div><div class="line">                <span class="keyword">try</span> &#123;</div><div class="line">                    ActivityManagerNative.getDefault().activityResumed(token);</div><div class="line">                &#125; <span class="keyword">catch</span> (RemoteException ex) &#123;</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line"></div><div class="line">        &#125; <span class="keyword">else</span> &#123;</div><div class="line">            <span class="comment">// If an exception was thrown when trying to resume, then</span></div><div class="line">            <span class="comment">// just end this activity.</span></div><div class="line">            <span class="keyword">try</span> &#123;</div><div class="line">                ActivityManagerNative.getDefault()</div><div class="line">                    .finishActivity(token, Activity.RESULT_CANCELED, <span class="keyword">null</span>, <span class="keyword">false</span>);</div><div class="line">            &#125; <span class="keyword">catch</span> (RemoteException ex) &#123;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;</div></pre></td></tr></table></figure>
+<p>以上的代码中涉及到了window，windowmanager，view。windowmanager显然是window的管理者，而window则是一个抽象类，用于控制顶层窗口的外观和行为，绘制背景和标题栏、处理默认的按键等。其实window的唯一实现类就是phoneWindow。当我们设置setContentView的时候，首先会返回一个继承WIndow抽象类的PhoneWindow，调用window的setContentView方法，会生成一个继承自FrameLayout的ViewGroup，并处理其中的标题栏等等，我们设置是其子view，在view中涉及到设计模式：组合模式和装饰模式。</p>
+<p>我们在Acivity启动的performResumeActivity，有一个addview，在其实现类中WindowmanagerImpl的addview实现中生成了ViewRoot，而就在这里创建了Surface。并在ViewRoot通过Binder系统和WIndowManagerService进行了跨进程交互。ViewRoot能处理handler消息，调用其performTravesals函数中完成Activity现实。从surfacelock一块Canvas，交给mView画完之后unlockCanvasAndPost释放这块Canvas。</p>
+<p>###Surface</p>
+<p>下图为surface的基本创建流程：</p>
+<p><img src="/images/surface/surfacecreat.JPG"></p>
+
+<p>负责surface渲染的关键SurfaceFlinger线程，其基本工作流程为：</p>
+<p><img src="/images/surface/sf.JPG"></p>
+
+
+
+
+
+
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yunfengsa.github.io/2016/04/22/shenruandroid-surface/" data-id="ciwemdofm001fzsri0ovk5ne7" class="article-share-link">Delen</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/surface/">surface</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2016/05/03/dagger2/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Nieuwer</strong>
+      <div class="article-nav-title">
+        
+          依赖注入Dagger2
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2016/04/16/shejimoshi/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Ouder</strong>
+      <div class="article-nav-title">设计模式</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categorieën</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Chromium/">Chromium</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Database/">Database</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Markdown/">Markdown</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Ruby/">Ruby</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/android/">android</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/gradle/">gradle</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/ndk/">ndk</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/octopress/">octopress</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/opencv/">opencv</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/rails/">rails</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/ruby/">ruby</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/rx/">rx</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/weex/">weex</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/设计模式/">设计模式</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Labels</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/binder/">binder</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/surface/">surface</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/binder/" style="font-size: 10px;">binder</a> <a href="/tags/surface/" style="font-size: 10px;">surface</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archieven</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/12/">December 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">November 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/10/">October 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">May 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">April 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">January 2016</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">December 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">November 2015</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">October 2015</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recente berichten</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2016/12/07/hello-world/">Hello World</a>
+          </li>
+        
+          <li>
+            <a href="/2016/11/28/weex-and-vue-and-so-on/">开启Vue学习之旅</a>
+          </li>
+        
+          <li>
+            <a href="/2016/11/07/rx-to-retrofit-and-so-on/">Rx的进攻路线（选取比较好的文章）</a>
+          </li>
+        
+          <li>
+            <a href="/2016/11/06/find-a-way-to-gesturerecognization/">Find A Way to Gesture Recognization</a>
+          </li>
+        
+          <li>
+            <a href="/2016/11/02/camkeandopencv/">CMake编译NDK，以及在OpenCV中的应用</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2016 yunfengsa<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>
