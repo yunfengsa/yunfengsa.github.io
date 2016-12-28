@@ -1,0 +1,412 @@
+---
+layout: post
+title: "Okhttp，不可不深入（封装、https、源码分析）"
+date: 2016-01-07 13:13:42 +0800
+comments: true
+categories: android
+---
+
+前一段有一个项目，牵扯到循环更新的问题，关于网络的框架当时只是简单的封装了httpClient，由于担心连接池污染问题，甚至直接关闭了连接池复用。最近有点时间，整理一下[Okhttp](http://square.github.io/okhttp/)。
+
+网上有那么多网络框架，为什么okhttp这么受宠，那必然这货真是个金子啊！
+
+* 支持[SPDY](https://zh.wikipedia.org/wiki/SPDY),在手淘的521计划中，也提到了SPDY能够提高访问速度的特性。
+* 使用GZIP压缩下载内容
+* 利用响应缓存避免重复的网络请求。
+* 网络出现问题的时候，okhttp依然有效，它将从常见的问题中恢复。
+* 当有多个IP的时候，第一个连接失败的时候，Okhttp会尝试其他的地址，这对多数据中心的服务大有裨益啊。
+<!--more-->
+
+#### Okhttp的缓存
+
+okhttp本身就有缓存的功能，是不是很dia..，需要自己设置
+`client.setCache(new Cache(context.getCacheDir(),maxCacheSize));`,设置缓存目录和缓存大小，okhttp内部是使用LRU来管理缓存的。
+
+####过期时间
+
+有了缓存，则需要有过期控制，缓存是由HTTP消息头中的"Cache-control"来控制，常见的取值有private、no-cache、max-age、must-revalidate等，默认为private。 
+
+* public:所有内容被缓存
+* private：内容之缓存到私有缓存中
+* no-cache：所有内容不会被缓存
+* no-store：所有内容不会被缓存到缓存或Internet临时文件中
+* must-revalidation/proxy-revalidation：如果缓存的内容失败，请求必须发送到服务器/代理进行重新验证
+* max-age=xxx(xxx is numeric) 缓存的内容将在 xxx 秒后失效, 这个选项只在HTTP 1.1可用, 并如果和Last-Modified一起使用时, 优先级较高
+
+Okhtp提供了一个拦截器，无非就是在http请求发送之前，拦截下来，做一些处理再发送，我们可以在拦截器里对Cache-control：maxage=36000添加到请求里去。
+
+```java
+
+Interceptor cacheInterceptor = new Interceptor() {
+    @Override public Response intercept(Chain chain) throws IOException {
+        Response originalResponse = chain.proceed(chain.request());
+                        return originalResponse.newBuilder()
+                .removeHeader("Pragma")//Pragma:no-cache。在HTTP/1.1协议中，它的含义和Cache-Control:no-cache相同。为了确保缓存生效
+                .header("Cache-Control", String.format("max-age=%d", maxCacheAge))//添加缓存请求头
+                .build();
+    }
+};
+
+```
+
+####调用OkHttp方法，实现封装。
+
+`Request.Builder requestBuilder = new Request.Builder().url(url).cacheControl(cacheControl);`
+
+一个OkHttp的请求大致是这样子的，url是必须的，然后如果我们要实现缓存，cacheControl也是必须的，OkHttp提供了CacheControl这个类，里面FORCE_CACHE 和FORCE_NETWORK分别表示只从缓存获取数据和只通过网络请求获取数据，有了前面的两步设置，这时我们是可以通过设置FORCE_CACHE 来从缓存获取数据而不通过网络获取服务器的数据的（前提是你本地要有缓存，也就是必须先通过网络请求获取到一次数据才能获取到缓存），代码没什么，就不贴了。
+
+嗯，我们的网络请求实现本地缓存已经实现，当你网络请求失败的时候又不希望展示给用户的是一片空白，那你就可以调用本地之前的缓存了！！你别告诉我这样你就满足了，这每次都要判断是不是请求失败了，要不要请求缓存，这想想都蛋疼啊！！！
+
+所以我对OkHttp进行封装，实现了只查询缓存，网络请求失败自动查询本地缓存等功能 
+支持4种不同的查询方式
+
+* ONLY_NETWORK  只查询网络数据
+
+* ONLY_CACHED   只查询本地缓存
+
+* CACHED_ELSE_NETWORK  先查询本地缓存，如果本地没有，再查询网络数据
+
+* NETWORK_ELSE_CACHED  先查询网络数据，如果没有，再查询本地缓存
+
+代码：
+
+```java
+
+ //实现一个最基本的请求方法
+private Call request(Request request, Callback callback){
+    if(DEBUG){
+        Log.d("OKHttp",request.toString());
+    }
+    Call call = client.newCall(request);
+    call.enqueue(callback);
+    return call;
+}
+
+//实现自己的回调，添加了onStart和onFinish方法
+public abstract class Callback implements com.squareup.okhttp.Callback {
+    public void onStart(){
+ 
+    }    
+    public void onFinish(){
+ 
+    }
+    public abstract void onFailure(Request request, IOException e);
+    public abstract void onResponse(Response response) throws IOException;
+}
+
+//定义一个公用的方法，实现最基本的封装，无论是post还是get都适用
+private void request(String url, String method, RequestBody requestBody, final CacheControl cacheControl, Headers headers,Object tag ,final Callback callback){
+    final Request.Builder requestBuilder = new Request.Builder().url(url).cacheControl(cacheControl);
+    if(headers!=null){
+        requestBuilder.headers(headers);
+    }
+    requestBuilder.method(method,requestBody);//如果是get请求，这里requestBody就应该传个null
+    requestBuilder.tag(tag==null?url:tag);//OkHttp的tag是对请求的标志，可以通过tag来获取到请求和取消请求，这里如果你不传，就将当前url设置为tag 
+    final Request request = requestBuilder.build();
+    request(request,new Callback() {
+        //这里是回调
+        @Override
+        public void onStart() {
+            if(callback!=null){
+                    callback.onStart();
+                }
+        }  
+        @Override            
+        public void onFinish() {                
+        if(callback!=null){
+                callback.onFinish();
+            }
+        }            
+        @Override            
+        public void onFailure(Request request, IOException e) {                
+        if(callback!=null){
+                callback.onFailure(request,e);
+                callback.onFinish();
+            }
+        }            
+        @Override            
+        public void onResponse(Response response) throws IOException {                
+            if(response.code()==504){
+                //OkHttp如果缓存请求不到是会报504的                    
+                if(CacheControl.FORCE_CACHE == cacheControl){                        
+                    if(callback!=null){
+                        callback.onFailure(request,new IOException("cached not found"));
+                        callback.onFinish();
+                    }                        
+                    return;
+                }
+            }                
+            if(callback!=null){
+                callback.onResponse(response);
+                callback.onFinish();
+            }
+        }
+    });
+}
+
+```
+
+```java
+
+//实现只请求网络和只请求缓存的方法 
+public void requestFromNetwork(final String url,String method,RequestBody requestBody, Headers headers,Object tag,final Callback callback){
+        request(url,method,requestBody,CacheControl.FORCE_NETWORK,headers,tag,callback);
+}    
+public void requestFromCached(String url,String method,RequestBody requestBody,Headers headers ,Object tag,final Callback callback){
+       
+   request(url,method,requestBody,CacheControl.FORCE_CACHE,headers,tag,callback);
+}
+
+```
+
+CACHED_ELSE_NETWORK  先查询本地缓存，如果本地没有，再查询网络数据，我们就需要自己再传一个Callback  c2回调了，当回调执行成功的时候，我们直接就调用方法的回调的onResponse就行，其余情况我们就需要查询网络的数据，到了这一步，说明本地没有缓存了，所以直接调用requestFromNetwork就行
+
+```java
+
+public void request(final String url,final CacheType cacheType,final String method,final RequestBody requestBody,final Headers headers,final Object tag,final Callback callback){
+    if(callback!=null)
+    callback.onStart();
+    switch(cacheType){
+        case ONLY_NETWORK://只查询网络数据
+            requestFromNetwork(url,method,requestBody,headers,tag,callback);
+            break;
+        case ONLY_CACHED://只查询本地缓存
+            requestFromCached(url,method,requestBody,headers,tag,callback);
+            break;
+        case CACHED_ELSE_NETWORK:
+            requestFromCached(url,method,requestBody,headers,tag,new Callback(){
+                @Override 
+                public void onStart(){
+                    if(callback!=null){
+                        callback.onStart();
+                    }
+                }
+                @Override public void onFinish(){
+                    if(callback!=null){
+                        callback.onFinish();
+                    }
+                }
+                @Override 
+                public void onFailure(Request request,IOException e){
+                    requestFromNetwork(url,method,requestBody,headers,tag,callback);
+                }
+                @Override public void onResponse(Response response)throws IOException{
+                    if(response.code()==200){
+                        //response.isSuccessful()OkHttp是有这个方法判断请求是否成功的，但判断的方法是根据状态码是否是20开头（200，201，202，203等，具体区别就不在这里描述了，有兴趣的百度）来判断的，但只有200返回的数据才是我们想要的                            
+                        if(callback!=null){
+                            callback.onResponse(response);
+                            callback.onFinish();
+                        }
+                    }else{
+                        requestFromNetwork(url,method,requestBody,headers,tag,callback);
+                    }
+                }
+             });
+             break;
+         case NETWORK_ELSE_CACHED:
+            requestFromNetwork(url,method,requestBody,headers,tag,new Callback(){
+                @Override public void onStart(){
+                    if(callback!=null){
+                        callback.onStart();
+                    }
+                }
+                @Override public void onFinish(){
+                    if(callback!=null){
+                    callback.onFinish();
+                    }
+                 }
+                @Override public void onFailure(Request request,IOException e){
+                    requestFromCached(url,method,requestBody,headers,tag,callback);
+                }
+                @Override public void onResponse(Response response)throws IOException{
+                    if(response.code()==200){
+                        if(callback!=null){
+                            callback.onResponse(response);
+                            callback.onFinish();
+                        }
+                    } else{
+                            requestFromCached(url,method,requestBody,headers,tag,callback);
+                    }
+                }
+            });
+            break;
+    }
+}
+
+```
+
+NETWORK_ELSE_CACHED  这个和CACHED_ELSE_NETWORK 实现原理是一样的，就略过。
+
+####添加Gson
+
+```java
+
+public abstract class JsonCallback<T> {
+    public abstract void onFailure(Request request, Exception e);    
+    public abstract void onResponse(T object) throws IOException;    public void onStart(){
+ 
+    }    
+    public void onFinish(){
+ 
+    }
+    //这个才是重点，获取Json的类型，因为数据可能集合也可能是Object
+    Type getType(){
+        Type type = ((ParameterizedType)getClass().getGenericSuperclass()).getActualTypeArguments()[0];        
+        if(type instanceof Class){            
+            return type;//如果是Object直接返回
+        }else{            
+            return new TypeToken<T>(){}.getType();//如果是集合，获取集合的类型map或list
+        }
+    }
+}
+
+```
+
+```java
+
+/这里只贴部分关键代码 
+public void request(final String url, final CacheType cacheType, final String method, final RequestBody requestBody, final Headers headers,Object tag,final JsonCallback callback)
+ 
+//在onResponse进行解析，具体看文章结尾源码
+@Override
+public void onResponse(Response response) throws IOException {     
+    if(response.isSuccessful() && callback!=null){
+        String jsonString = response.body().string();;         
+        if(!TextUtils.isEmpty(jsonString)){
+            Object result = null;             
+            try {
+                 result =  gson.fromJson(jsonString,callback.getType());//直接调用Gson解析
+                 callback.onResponse(result);
+                 callback.onFinish();
+            } catch (JsonSyntaxException e) {
+                 callback.onFailure(null,new Exception("json string parse error :"+e.toString()));
+                 callback.onFinish();
+                 e.printStackTrace();
+            }
+ 
+         }else{
+             callback.onFailure(null,new Exception("json string may be null"));
+             callback.onFinish();
+         }
+    }
+}
+
+```
+##既然说到okhttp，那就了解一下https和它的关系吧
+
+默认情况下okhttp是支持https网站的，一般情况下https都是CA机构颁发的证书，默认是可以信任的。
+
+**那自签名网站该如何呢，比如大名鼎鼎的[12306](www.12306.cn)**
+
+这一部分大概说一下：
+
+* https的一些相关知识
+* okhttp访问自签名https网站
+
+####https相关知识
+
+HTTPS在传输数据之前需要客户端（浏览器）与服务端（网站）之间进行一次握手，在握手过程中将确立双方加密传输数据的密码信息.
+
+基本过程：
+
+1. 浏览器将自己支持的一套加密算法、HASH算法发送给网站。
+
+2. 网站从中选出一组加密算法与HASH算法，并将自己的身份信息以证书的形式发回给浏览器。证书里面包含了网站地址，加密公钥，以及证书的颁发机构等信息。
+
+3. 浏览器获得网站证书之后，开始验证证书的合法性，如果证书信任，则生成一串随机数字作为通讯过程中对称加密的秘钥。然后取出证书中的公钥，将这串数字以及HASH的结果进行加密，然后发给网站。
+
+4. 网站接收浏览器发来的数据之后，通过私钥进行解密，然后HASH校验，如果一致，则使用浏览器发来的数字串使加密一段握手消息发给浏览器。
+
+5. 浏览器解密，并HASH校验，没有问题，则握手结束。接下来的传输过程将由之前浏览器生成的随机密码并利用对称加密算法进行加密。
+
+####访问自签名网站
+
+首先需要导出网站的证书，放到assets文件夹下
+
+```java
+
+public void setCertificates(InputStream... certificates)
+{
+    try
+    {
+        CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
+        KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+        keyStore.load(null);
+        int index = 0;
+        for (InputStream certificate : certificates)
+        {
+            String certificateAlias = Integer.toString(index++);
+            keyStore.setCertificateEntry(certificateAlias, certificateFactory.generateCertificate(certificate));
+ 
+            try
+            {
+                if (certificate != null)
+                    certificate.close();
+            } catch (IOException e)
+            {
+            }
+        }
+ 
+        SSLContext sslContext = SSLContext.getInstance("TLS");
+ 
+        TrustManagerFactory trustManagerFactory = 
+            TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm()); 
+ 
+        trustManagerFactory.init(keyStore);
+        sslContext.init
+            (   
+                null, 
+                trustManagerFactory.getTrustManagers(), 
+                new SecureRandom()
+            );
+       mOkHttpClient.setSslSocketFactory(sslContext.getSocketFactory());
+ 
+ 
+    } catch (Exception e)
+    {
+        e.printStackTrace();
+    } 
+ 
+}
+
+```
+
+以上代码的基本流程是：
+
+* 构造CertificateFactory对象，通过它的generateCertificate(is)方法得到Certificate。
+
+* 然后讲得到的Certificate放入到keyStore中。
+
+* 接下来利用keyStore去初始化我们的TrustManagerFactory
+
+* 由trustManagerFactory.getTrustManagers获得TrustManager[]初始化我们的SSLContext
+
+* 最后，设置我们mOkHttpClient.setSslSocketFactory即可。
+
+然后初始化即可：
+
+```java
+
+public class MyApplication extends Application
+{
+   @Override
+    public void onCreate()
+    {
+        super.onCreate();
+ 
+        try
+        {
+            OkHttpClientManager.getInstance()
+                    .setCertificates(getAssets().open("srca.cer"));
+        } catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+ 
+ 
+}
+
+```
+
+
+

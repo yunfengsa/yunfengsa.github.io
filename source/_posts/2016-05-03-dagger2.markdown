@@ -1,0 +1,192 @@
+---
+layout: post
+title: "依赖注入Dagger2"
+date: 2016-05-03 15:16:31 +0800
+comments: true
+categories: android
+keywords: Dagger2,依赖注入
+tags: [Dagger2]
+---
+
+依赖注入（DI）适用于实现控制反转（IOC）的最常见的方式。为什么需要控制反转呢？先看一段代码
+
+```java
+
+public class MovieLister {
+    private MovieFinder finder;
+
+    public MovieLister() {
+        finder = new MovieFinderImpl();
+    }
+    
+    public Movie[] moviesDirectedBy(String arg) {
+        List allMovies = finder.findAll();
+        for (Iterator it = allMovies.iterator(); it.hasNext();) {
+            Movie movie = (Movie) it.next();
+            if (!movie.getDirector().equals(arg)) it.remove();
+        }
+        return (Movie[]) allMovies.toArray(new Movie[allMovies.size()]);
+    }
+    ...
+}
+
+public interface MovieFinder {
+    List findAll();
+}
+
+
+```
+
+<!--more-->
+
+我们创建了一个名为MovieLister的类来提供需要的电影列表，它moviesDirectedBy方法提供根据导演名来搜索电影的方式。真正负责搜索电影的是实现了MovieFinder接口的MovieFinderImpl，我们的MovieLister类在构造函数中创建了一个MovieFinderImpl的对象。但是，当我们希望修改finder，将finder替换为一种新的实现时（比如为MovieFinder增加一个参数表明Movie数据的来源是哪个数据库），我们不仅需要修改MovieFinderImpl类，还需要修改我们MovieLister中创建MovieFinderImpl的代码。**这就是依赖注入要处理的耦合。这种在MovieLister中创建MovieFinderImpl的方式，使得MovieLister不仅仅依赖于MovieFinder这个接口，它还依赖于MovieListImpl这个实现。**
+
+这种硬初始化导致了各种问题：1）上文所述的修改其实现时，需要修改创建处的代码；2）不便于测试，这种方式创建的类（上文中的MovieLister）无法单独被测试，其行为和MovieFinderImpl紧紧耦合在一起，同时，也会导致代码的可读性问题（“如果一段代码不便于测试，那么它一定不便于阅读。”）。
+
+##依赖注入的实现方式
+
+1. 构造函数注入
+
+```java
+
+public class MovieLister {
+    private MovieFinder finder;
+
+    public MovieLister(MovieFinder finder) {
+        this.finder = finder;
+    }
+    ...
+}
+
+```
+
+2. setter注入
+
+```java 
+
+public class MovieLister {
+    s...
+    public void setFinder(MovieFinder finder) {
+        this.finder = finder;
+    }
+}
+
+```
+
+3. 接口注入
+
+```java
+
+public interface InjectFinder {
+    void injectFinder(MovieFinder finder);
+}
+
+
+class MovieLister implements InjectFinder {
+    ...
+    public void injectFinder(MovieFinder finder) {
+      this.finder = finder;
+    }
+    ...
+}
+
+
+```
+
+总之：非自己主动初始化依赖，而通过外部来传入依赖的方式，我们就称为依赖注入。依赖注入主要有两个好处：
+
+1. 解耦，将依赖之间解耦。
+2. 因为已经解耦，所以方便做单元测试，尤其是 Mock 测试。
+
+##进入正题dagger2的工作流程
+
+基本概念：
+
+@Inject: 可以用在构造方法上，这样就告诉Dagger2使用这个构造方法来创建对象，如果构造方法里面有参数依赖的话会自动给填充上；也可以用在成员变量上，Dagger2会自动将这个变量初始化。用@Inject修饰的内容可以理解为产品
+
+@Provides: 用来修饰方法来提供各种依赖，方法的返回类型就是所提供的依赖类型，用@Provides修饰的可以理解为生产机器
+
+@Module:所有的@Provides方法都必须放到一个Moudle中，一个Moudle就是使用@Moudle修饰的类,可以理解为一个工厂
+
+@Component：修饰一个接口，将依赖的生产和使用结合起来，可以理解为运输部门吧，将工厂生产的产品运送到使用它的人们手里。
+
+
+```java
+
+public class MainActivity extends ActionBarActivity {
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        UserModel user = new UserModel();
+        ((TextView) findViewById(R.id.user_desc_line)).setText(user.id + "\n" + user.name + "\n" + user.gender);
+    }
+    ...
+}
+
+```
+
+在创建UserModel的时候，我们使用了前文所说的hard init。一旦我们的UserModel的创建方式发生了改变（比如需要传入Context对象到构造函数），我们就需要修改所有创建UserModel的代码。而我们希望的是，对于UserModel的修改不影响其他模块的代码（比如这里的MainActivity）。
+
+1. 构建依赖
+
+```java
+
+@Module
+public class ActivityModule {
+
+    @Provides UserModel provideUserModel() {
+        return new UserModel();
+    }
+}
+
+```
+
+可以看到，我们使用@Module标识类型为module，并用@Provides标识提供依赖的方法。
+
+2. 构建Injector
+
+有了提供依赖的组件，我们还需要将依赖注入到需要的对象中。连接提供依赖和消费依赖对象的组件被称为Injector。Dagger2中，我们将其称为component。ActivityComponent代码如下：
+
+```java
+
+@Component(modules = ActivityModule.class)
+public interface ActivityComponent {
+    void inject(MainActivity activity);
+}
+
+```
+
+**这里必须是真正消耗依赖的类型MainActivity，而不可以写成其父类，比如Activity。因为Dagger2在编译时生成依赖注入的代码，会到inject方法的参数类型中寻找可以注入的对象，但是实际上这些对象存在于MainActivity，而不是Activity中。如果函数声明参数为Activity，Dagger2会认为没有需要注入的对象。当真正在MainActivity中创建Component实例进行注入时，会直接执行按照Activity作为参数生成的inject方法，导致所有注入都失败。**
+
+3. 完成依赖注入
+
+```java
+
+public class MainActivity extends ActionBarActivity {
+    private ActivityComponent mActivityComponent;
+
+    @Inject UserModel userModel;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        mActivityComponent = DaggerActivityComponent.builder().activityModule(new ActivityModule()).build();
+        mActivityComponent.inject(this);
+        ((TextView) findViewById(R.id.user_desc_line)).setText(userModel.id + "\n" + userModel.name + "\n" + userModel.gender);
+    }
+    ...
+}
+
+```
+
+首先，我们使用@Inject标志被注入的对象userModel（注意userModel不能为private），之后通过Dagger2生成的实现了我们提供的ActivityComponent接口类DaggerActivityComponent创建component，调用其inject方法完成注入。
+至此，我们使用Dagger实现了最简单的依赖注入。
+
+文章参考：
+
+[非常详细的一篇文章](http://www.wangchenlong.org/2016/03/16/1602/use-dagger-first/)
+
+[另一篇](http://blog.csdn.net/duo2005duo/article/details/50618171)

@@ -1,0 +1,49 @@
+---
+layout: post
+title: "First_blog_简单记录下Octopress_基本使用命令"
+date: 2015-10-28 15:28:58 +0800
+comments: true
+categories: octopress
+tags: [octopress]
+---
+##技术博客利器--octopress
+###基本命令
+#####添加文章
+<code> 
+$ rake new_post["title"]//保存在文件夹source/_posts下边
+</code>
+#####预览和发布
+运行后会通过title生成相关文件、链接，可在文件里修改显示出来的标题。
+title可以使用中文，会自动转化为拼音（个人不建议，因为链接会比较无意义）。
+<pre>
+$ rake generate       #发布文件到public目录
+$ rake watch          #监控source和sass目录的变动
+$ rake preview        #启动服务器并监控变动，通过http://localhost:4000预览
+</pre>
+发布
+<pre>
+$ rake generate
+$ rake deploy
+#或者直接使用一条命令，看名字就知道是怎么回事了
+$ rake gen_deploy
+</pre>
+###更多设置
+
+1.添加“关于我”
+
+在source下新建about目录，并在里面添加index.markdown文件。
+编辑导航条source/_includes/custom/navigation.html
+注意:index.markdown文件需要加上头，否则会找不到。
+
+2.首页只显示摘要
+
+在文中加入<!--more-->来控制摘要截取位置
+修改_config.yml里的excerpt_link控制链接文字
+部署到Github
+如果你有自己的域名，可参考：Github Page绑定自己域名
+
+###How to update[详细内容点击此](http://octopress.org/docs/updating/)
+	git pull octopress master 
+	bundle install
+	rake update_source
+	rake update_style

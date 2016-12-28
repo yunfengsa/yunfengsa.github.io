@@ -1,0 +1,524 @@
+---
+layout: post
+title: "RxJava知多少"
+date: 2016-01-04 14:34:25 +0800
+comments: true
+categories: android
+tags: [Rxjava]
+---
+
+RxJava是一个响应式编程框架，采用观察者设计模式。RxJava在android开发中变得越来越流行。[RxAndroid](https://github.com/ReactiveX/RxAndroid)在[RXjava](https://github.com/ReactiveX/RxJava)基础上增加了android的支持。
+<!--more-->
+
+##基础
+
+既然是观察者模式，自然少不了观察者（Subscribers）和被观察者（Observables）。一个Observable可以发出零个或者多个事件，知道结束或者出错。每发出一个事件，就会调用它的Subscriber的onnext方法，最后调用Subscriber.onNext或者Subscriber.onError结束。
+
+Rxjava的看起来很想设计模式中的观察者模式，但是有一点明显不同，那就是如果一个Observerble没有任何的的Subscriber，那么这个Observable是不会发出任何事件的。
+
+####Hello World
+
+```java
+
+Observable<String> myObservable = Observable.create(  
+    new Observable.OnSubscribe<String>() {  
+        @Override  
+        public void call(Subscriber<? super String> sub) {  
+            sub.onNext("Hello, world!");  
+            sub.onCompleted();  
+        }  
+    }  
+);  
+
+```
+
+这里定义的Observable对象仅仅发出一个Hello World字符串，然后就结束了。接着我们创建一个Subscriber来处理Observable对象发出的字符串。
+
+```java
+
+Subscriber<String> mySubscriber = new Subscriber<String>() {  
+    @Override  
+    public void onNext(String s) { System.out.println(s); }  
+  
+    @Override  
+    public void onCompleted() { }  
+  
+    @Override  
+    public void onError(Throwable e) { }  
+};  
+
+```
+
+这里subscriber仅仅就是打印observable发出的字符串。通过subscribe函数就可以将我们定义的myObservable对象和mySubscriber对象关联起来，这样就完成了subscriber对observable的订阅。
+
+```java
+
+myObservable.subscribe(mySubscriber);
+
+```
+
+一旦mySubscriber订阅了myObservable，myObservable就是调用mySubscriber对象的onNext和onComplete方法，mySubscriber就会打印出Hello World！
+
+**更简洁的写法**
+
+```java
+
+Observable.just("Hello, world!")  //.just用来创建只发出一个事件就结束的Observable对象。
+    .subscribe(new Action1<String>() {  /*subscribe有一个接收三个Action1类型的参数，分别对用OnNext，OnComplete，OnError 这里我们只取第一个参数*/
+        @Override  
+        public void call(String s) {  
+              System.out.println(s);  
+        }  
+    });  
+
+```
+
+使用Java8的lambda可以使代码更加简洁
+
+```java
+
+Observable.just("Hello, world!")  
+    .subscribe(s -> System.out.println(s));  
+
+```
+
+关于[Lambda点击此](http://yunfengsa.github.io/blog/2016/01/04/labmbdaanddelegate/)
+
+如果我们想对*Hello,world!*进行变换该怎么做呢？
+
+**操作符**
+
+操作符就是为了解决对Observable对象的变换的问题，操作符用于在Observable和最终的Subscriber之间修改Observable发出的事件。RxJava提供了很多很有用的操作符。
+比如map操作符，就是用来把把一个事件转换为另一个事件的。
+
+```java
+
+Observable.just("Hello, world!")  
+  .map(new Func1<String, String>() {  
+      @Override  
+      public String call(String s) {  
+          return s + " -Dan";  
+      }  
+  })  
+  .subscribe(s -> System.out.println(s));  
+
+```
+
+使用lambda可以简化为
+
+```java
+
+Observable.just("Hello, world!")  
+    .map(s -> s + " -Dan")  
+    .subscribe(s -> System.out.println(s));  
+
+```
+
+**map操作符进阶**
+
+map操作符更有趣的一点是它不必返回Observable对象返回的类型，你可以使用map操作符返回一个发出新的数据类型的observable对象。
+
+比如上面的例子中，subscriber并不关心返回的字符串，而是想要字符串的hash值
+
+```java
+
+Observable.just("Hello, world!")  
+    .map(new Func1<String, Integer>() {  
+        @Override  
+        public Integer call(String s) {  
+            return s.hashCode();  
+        }  
+    })  
+    .subscribe(i -> System.out.println(Integer.toString(i)));  
+
+```
+
+很有趣吧？我们初始的Observable返回的是字符串，最终的Subscriber收到的却是Integer，当然使用lambda可以进一步简化代码：
+
+```java
+
+Observable.just("Hello, world!")  
+    .map(s -> s.hashCode())  
+    .subscribe(i -> System.out.println(Integer.toString(i)));  
+
+```
+
+前面说过，Subscriber做的事情越少越好，我们再增加一个map操作符
+
+```java
+
+Observable.just("Hello, world!")  
+    .map(s -> s.hashCode())  
+    .map(i -> Integer.toString(i))  
+    .subscribe(s -> System.out.println(s));  
+
+```
+
+**重要两点：**
+
+1.Observable和Subscriber可以做任何事情
+Observable可以是一个数据库查询，Subscriber用来显示查询结果；Observable可以是屏幕上的点击事件，Subscriber用来响应点击事件；Observable可以是一个网络请求，Subscriber用来显示请求结果。
+
+2.Observable和Subscriber是独立于中间的变换过程的。
+在Observable和Subscriber中间可以增减任何数量的map。整个系统是高度可组合的，操作数据是一个很简单的过程。
+
+##RxJava进阶（操作符）
+
+Rxjava的强大特性来自于它所定义的操作符
+
+**例子：**
+
+假设一个方法根据输入的字符串返回一个网站的url列表
+
+```java
+
+Observable<List<String>> query(String text);//根据输入text返回一个List<String>   
+
+```
+
+假如我们要显示查询的结果，可以这样写：
+
+```java
+
+query("Hello, world!")  
+    .subscribe(urls -> {  
+        for (String url : urls) {  
+            System.out.println(url);  
+        }  
+    });  //很简单
+
+```
+
+我们有更简单的方法取代for each遍历！那就是*Observable.from()*，他的接收一个集合作为输入，然后每次输出一个元素给subscriber
+
+```java
+
+query("Hello, world!")  
+    .subscribe(urls -> {  
+        Observable.from(urls)  
+            .subscribe(url -> System.out.println(url));  
+    });  
+
+```
+
+上述代码中，出现了两次输出，比较冗杂，我们可以进一步改进
+
+使用**flatmap**。
+
+Observable.flatmap接收一个Observable的输出作为输入，同时输出另外一个Observable。(一定要注意我们query方法返回的类型是Observable<List<String>>)!
+
+代码：
+
+```java
+
+query("Hello, world!")  
+    .flatMap(new Func1<List<String>, Observable<String>>() {  
+        @Override  
+        public Observable<String> call(List<String> urls) {  
+            return Observable.from(urls);  
+        }  
+    })  
+    .subscribe(url -> System.out.println(url));  
+
+```
+
+使用lambda表达式：
+
+```java
+
+query("Hello,world")
+	.flatMap(urls->Observable.from(urls))
+		.subscribe(url->System.out.prinln(url));
+
+```
+
+这里有必要理一下flatMap，flatMap输出的是一个新的Observable，这个Observable正是subscribe想要接收的，之前接收的是List<String>,而是收到一些列单个的字符串，就像observable.from输出一样。*这也就理解了flatmap和map的区别。无非是flatmap返回的类型是Observable类型，而map则是基本类型。*
+
+我们再引入一个方法
+
+```java
+
+Observable<String> getTitle(String URL);  
+
+```
+
+注意返回的类型是Observable类型。这个时候就要使用flatMap（）可以解决这个问题。
+
+```java
+
+query("Hello, world!")  
+    .flatMap(urls -> Observable.from(urls))  
+    .flatMap(new Func1<String, Observable<String>>() {  
+        @Override  
+        public Observable<String> call(String url) {  
+            return getTitle(url);  
+        }  
+    })  
+    .subscribe(title -> System.out.println(title));  
+
+```
+
+使用lambda：
+
+```java
+
+query("Hello,world!")
+	.flatmap(urls->Observable.from(urls))
+	.flatmap(url->getTitle(url))
+		.subscribe(title->System.out.prinln(title))
+
+```
+
+**其他相关操作符**
+
+filter（）：输入和输出相同的元素，过滤不满足条件的元素。
+
+take（）：输出最多指定数量的结果。
+
+doOnNext（）：允许我们在每次输出一个元素之前做一些额外的事情，比如这里的保存标题。
+
+```java
+
+query("Hello, world!")  
+    .flatMap(urls -> Observable.from(urls))  
+    .flatMap(url -> getTitle(url))  
+    .filter(title -> title != null)  
+    .take(5)  
+    .doOnNext(title -> saveTitle(title))  
+    .subscribe(title -> System.out.println(title));  
+
+```
+
+我们在doOnNext（）方法中保存了title但是对于subscribe来说，我们并不知道这些，它只是认为自己在接收一个Observable<String>对象。良好的封装性带来了编码的便利！
+
+##响应式的好处
+
+**错误处理**
+
+每一个observable对象在终结的时候都会调用onCompleted()或者onError()方法。
+
+这样的优点在于：
+
+1.只要有异常发生onError()一定会被调用
+
+这极大的简化了错误处理。只需要在一个地方处理错误即可以。
+
+2.操作符不需要处理异常
+
+将异常处理交给订阅者来做，Observerable的操作符调用链中一旦有一个抛出了异常，就会直接执行onError()方法。
+
+3.你能够知道什么时候订阅者已经接收了全部的数据。
+
+知道什么时候任务结束能够帮助简化代码的流程。（虽然有可能Observable对象永远不会结束）
+
+我觉得这种错误处理方式比传统的错误处理更简单。传统的错误处理中，通常是在每个回调中处理错误。这不仅导致了重复的代码，并且意味着每个回调都必须知道如何处理错误，你的回调代码将和调用者紧耦合在一起。
+
+使用RxJava，Observable对象根本不需要知道如何处理错误！操作符也不需要处理错误状态-一旦发生错误，就会跳过当前和后续的操作符。所有的错误处理都交给订阅者来做。
+
+**调度器**
+
+假设你要进行网络请求，那么需要新开启一个线程，那么问题来了！！
+
+使用RxJava，你可以使用subscribeOn()指定观察者代码运行的线程，使用observerOn()指定订阅者运行的线程：
+
+```java
+
+myObservableServices.retrieveImage(url)
+    .subscribeOn(Schedulers.io())
+    .observeOn(AndroidSchedulers.mainThread())
+    .subscribe(bitmap -> myImageView.setImageBitmap(bitmap));
+
+```
+
+是不是很简单？任何在我的Subscriber前面执行的代码都是在I/O线程中运行。最后，操作view的代码在主线程中运行.
+
+最棒的是我可以把subscribeOn()和observerOn()添加到任何Observable对象上。这两个也是操作符！。我不需要关心Observable对象以及它上面有哪些操作符。仅仅运用这两个操作符就可以实现在不同的线程中调度。
+
+如果使用AsyncTask或者其他类似的，我将不得不仔细设计我的代码，找出需要并发执行的部分。使用RxJava，我可以保持代码不变，仅仅在需要并发的时候调用这两个操作符就可以。
+
+**订阅(Subscriptions)**
+
+当调用Observable.subscribe(),会返回一个Subscription对象。这个对象代表了被观察者和订阅者之间的联系。
+
+```java
+
+ubscription subscription = Observable.just("Hello, World!")
+    .subscribe(s -> System.out.println(s));
+
+```
+
+你可以在后面使用这个Subscription对象来操作被观察者和订阅者之间的联系.
+
+```java
+
+subscription.unsubscribe();
+System.out.println("Unsubscribed=" + subscription.isUnsubscribed());
+
+```
+
+RxJava的另外一个好处就是它处理unsubscribing的时候，会停止整个调用链。如果你使用了一串很复杂的操作符，调用unsubscribe将会在他当前执行的地方终止。不需要做任何额外的工作！
+
+##**RxAndroid：android中的相应编程**
+
+RxAndroid是RxJava的一个针对Android的平台扩展，它包含了一些能够简化Android开发的工具。
+
+首先，*AndroidSchedulers*提供了一个针对android的线程系统的调度器。需要在UI线程中运行某些代码？
+
+```java
+
+retrofitService.getImage(url)
+    .subscribeOn(Schedulers.io())
+    .observeOn(AndroidSchedulers.mainThread())
+    .subscribe(bitmap -> myImageView.setImageBitmap(bitmap));
+
+```
+
+如果你已经创建了自己的Handler，你可以使用HandlerThreadScheduler1将一个调度器链接到你的handler上。
+
+接着要介绍的就是AndroidObservable，它提供了跟多的功能来配合Android的生命周期。bindActivity()和bindFragment()方法默认使用AndroidSchedulers.mainThread()来执行观察者代码，这两个方法会在Activity或者Fragment结束的时候通知被观察者停止发出新的消息。
+
+```java
+
+AndroidObservable.bindActivity(this, retrofitService.getImage(url))
+    .subscribeOn(Schedulers.io())
+    .subscribe(bitmap -> myImageView.setImageBitmap(bitmap);
+
+```
+
+*AndroidObservable.fromBroadcast()*方法，它允许你创建一个类似BroadcastReceiver的Observable对象。下面的例子展示了如何在网络变化的时候被通知到：
+
+```java
+
+IntentFilter filter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
+AndroidObservable.fromBroadcast(context, filter)
+    .subscribe(intent -> handleConnectivityChange(intent));
+
+```
+
+最后要介绍的是*ViewObservable*,使用它可以给View添加了一些绑定。如果你想在每次点击view的时候都收到一个事件，可以使用ViewObservable.clicks()，或者你想监听TextView的内容变化，可以使用ViewObservable.text()。
+
+```java
+
+ViewObservable.clicks(mCardNameEditText, false)
+    .subscribe(view -> handleClick(view));
+
+```
+
+**Retrofit**
+
+关于Retrofit可以参考这两边文章（[官方文档](http://square.github.io/retrofit/)、[Retrofit的基本原理](http://www.cnblogs.com/angeldevil/p/3757335.html)）。
+
+Retrofit库内置了对Rxjava的支持，通常可以通过一个Callback对象来获取异步的结果：
+
+```java
+
+@GET("/user/{id}/photo")
+void getUserPhoto(@Path("id") int id, Callback<Photo> cb);
+
+```
+
+使用RxJava，你可以直接返回一个Observable对象。
+
+```java
+
+@GET("/user/{id}/photo")
+Observable<Photo> getUserPhoto(@Path("id") int id);
+
+```
+现在你可以随意使用Observable对象了。你不仅可以获取数据，还可以进行变换。 
+Retrofit对Observable的支持使得它可以很简单的将多个REST请求结合起来。比如我们有一个请求是获取照片的，还有一个请求是获取元数据的，我们就可以将这两个请求并发的发出，并且等待两个结果都返回之后再做处理：
+
+```java
+
+Observable.zip(
+    service.getUserPhoto(id),
+    service.getPhotoMetadata(id),
+    (photo, metadata) -> createPhotoWithData(photo, metadata))
+    .subscribe(photoWithData -> showPhoto(photoWithData));
+
+```
+
+在第二篇里我展示过一个类似的例子（使用flatMap()）。这里我只是想展示以下使用RxJava+Retrofit可以多么简单地组合多个REST请求。
+
+**如何让一个不支持Observable的对象的方法返回一个Observable对象**
+
+利用*Observable.just()*、*Observable.defer()*
+
+```java
+
+private Object oldMethod() { ... }
+
+public Observable<Object> newMethod() {
+    return Observable.just(oldMethod());
+}
+//这个方法适用于oldMethod执行速度比较快，不会出现阻塞的情况。
+```
+
+```java
+
+private Object slowBlockingMethod() { ... }
+
+public Observable<Object> newMethod() {
+    return Observable.defer(() -> Observable.just(slowBlockingMethod()));
+}
+//这个方法 即使slowBlockingMethod执行缓慢，阻塞，newMethod的调用也不会阻塞，除非你订阅返回的Observable对象。
+
+```
+###生命周期的管理
+
+这个是难点，主要有两个问题：
+
+* 在configuration改变（比如转屏）之后继续之前的Subscription。比如你使用Retrofit发出了一个REST请求，接着想在listview中展示结果。如果在网络请求的时候用户旋转了屏幕怎么办？你当然想继续刚才的请求，但是怎么搞？
+* Observable持有Context导致的内存泄露。这个问题是因为创建subscription的时候，以某种方式持有了context的引用，尤其是当你和view交互的时候，这太容易发生！如果Observable没有及时结束，内存占用就会越来越大。 
+
+这两个问题都没有什么完美解决方案，这里有两个参考：
+
+1.第一个问题的解决方案就是使用RxJava内置的缓存机制，这样你就可以对同一个Observable对象执行unsubscribe/resubscribe，却不用重复运行得到Observable的代码。cache() (或者 replay())会继续执行网络请求（甚至你调用了unsubscribe也不会停止）。这就是说你可以在Activity重新创建的时候从cache()的返回值中创建一个新的Observable对象。
+
+```java
+
+Observable<Photo> request = service.getUserPhoto(id).cache();
+Subscription sub = request.subscribe(photo -> handleUserPhoto(photo));
+
+// ...When the Activity is being recreated...
+sub.unsubscribe();
+
+// ...Once the Activity is recreated...
+request.subscribe(photo -> handleUserPhoto(photo));
+
+```
+
+注意，两次sub是使用的同一个缓存的请求。当然在哪里去存储请求的结果还是要你自己来做，和所有其他的生命周期相关的解决方案一样，必须在生命周期外的某个地方存储。（retained fragment或者单例等等）。
+
+2.第二个问题的解决方案就是在生命周期的某个时刻取消订阅。一个很常见的模式就是使用CompositeSubscription来持有所有的Subscriptions，然后在onDestroy()或者onDestroyView()里取消所有的订阅。
+
+```java
+
+private CompositeSubscription mCompositeSubscription
+    = new CompositeSubscription();
+
+private void doSomething() {
+    mCompositeSubscription.add(
+        AndroidObservable.bindActivity(this, Observable.just("Hello, World!"))
+        .subscribe(s -> System.out.println(s)));
+}
+
+@Override
+protected void onDestroy() {
+    super.onDestroy();
+
+    mCompositeSubscription.unsubscribe();
+}
+
+```
+
+你可以在Activity/Fragment的基类里创建一个CompositeSubscription对象，在子类中使用它。**注意:** 一旦你调用了CompositeSubscription.unsubscribe()，这个CompositeSubscription对象就不可用了, 如果你还想使用CompositeSubscription，就必须在创建一个新的对象了。
+
+
+
+
+
+
+
+
+
