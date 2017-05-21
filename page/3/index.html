@@ -328,6 +328,65 @@
 	
 				
 		<!-- Post Title -->
+		<p class="article-headline-p"><a href="/2015/11/03/ruby-gaojibiancheng/">Ruby_高级教程</a></p>
+	</div>
+
+    <!-- Post Excerpt -->
+    <div class="mdl-color-text--grey-600 mdl-card__supporting-text post_entry-content">
+        
+            ##Ruby 面向对象
+as we all know,ruby是一门纯面向对象的语言,即使是最原始的东西:字符串\数字\true\false都是对象.
+        
+        &nbsp;&nbsp;&nbsp;
+        <span>
+            <a href="/2015/11/03/ruby-gaojibiancheng/" target="_self">继续阅读</a>
+        </span>
+    </div>
+    <!-- Post_entry Info-->
+    <div id="post_entry-info">
+        <div id="post_entry-left-info" class="mdl-card__supporting-text meta mdl-color-text--grey-600 ">
+            <!-- Author Avatar -->
+            <div id="author-avatar">
+                <img src="/img/avatar.png" width="44px" height="44px" alt="yunfengsa's avatar">
+            </div>
+            <div>
+                <strong>yunfengsa</strong>
+                <span>11月 03, 2015</span>
+            </div>
+        </div>
+        <div id="post_entry-right-info">
+            <!-- Category -->
+            <span class="post_entry-category">
+                <a class="post_category-link" href="/categories/ruby/">ruby</a>
+            </span>
+            
+            
+            
+            <!-- Post Views -->
+            <span class="post_entry-views">
+                
+            </span>
+        </div>
+    </div>
+            
+</div>
+
+		
+		
+    
+		
+			<!-- Paradox Thumbnail -->
+        	<div class="post_entry-module mdl-card mdl-cell mdl-cell--12-col fade out">
+    
+    <!-- Post Thumbnail -->
+	
+		
+			<!-- Random Thumbnail -->
+			<div class="post_thumbnail-random mdl-card__media mdl-color-text--grey-50">
+		
+	
+				
+		<!-- Post Title -->
 		<p class="article-headline-p"><a href="/2015/10/30/ruby-jichuyufa/">Ruby_基础语法总结篇</a></p>
 	</div>
 
@@ -939,70 +998,6 @@ Java在创建对象时一次为该对象的所有实例变量都分配了相应�
 		
 		
     
-		
-			<!-- Paradox Thumbnail -->
-        	<div class="post_entry-module mdl-card mdl-cell mdl-cell--12-col fade out">
-    
-    <!-- Post Thumbnail -->
-	
-		
-			<!-- Random Thumbnail -->
-			<div class="post_thumbnail-random mdl-card__media mdl-color-text--grey-50">
-		
-	
-				
-		<!-- Post Title -->
-		<p class="article-headline-p"><a href="/2015/10/28/octo-setting/">octopress个性化配置</a></p>
-	</div>
-
-    <!-- Post Excerpt -->
-    <div class="mdl-color-text--grey-600 mdl-card__supporting-text post_entry-content">
-        
-            ###增加分类栏
-####1. 增加category_list插件保存以下代码到plugins/category_list_tag.rb：12345678910111213141516module Jekyll  class CategoryListTag &lt; Liquid::Tag    def render(context)      html = ""      categories = context.registers[:site].categories.keys      categories.sort.each do |category|        posts_in_category = context.registers[:site].categories[category].size        category_dir = context.registers[:site].config['category_dir']        category_url = File.join(category_dir, category.gsub(/_|\P&#123;Word&#125;/, '-').gsub(/-&#123;2,&#125;/, '-').downcase)        html &lt;&lt; "&lt;li class='category'&gt;&lt;a href='/#&#123;category_url&#125;/'&gt;#&#123;category&#125; (#&#123;posts_in_category&#125;)&lt;/a&gt;&lt;/li&gt;\n"      end      html    end  endendLiquid::Template.register_tag('category_list', Jekyll::CategoryListTag)
-####2. 添加source/_includes/asides/category_list.html文件，内容如下：
-   文章分类       {\%
-category_list
-%\}  //注意要把%与{之间的’\’去掉,去掉则运行服务器的代码
-####3. 修改_config.yml文件，在default_asides项中添加asides/category_list.html，值之间以逗号隔开。‘default_asides: [asides/category_list.html, asides/recent_posts.html]’
-        
-        &nbsp;&nbsp;&nbsp;
-        <span>
-            <a href="/2015/10/28/octo-setting/" target="_self">继续阅读</a>
-        </span>
-    </div>
-    <!-- Post_entry Info-->
-    <div id="post_entry-info">
-        <div id="post_entry-left-info" class="mdl-card__supporting-text meta mdl-color-text--grey-600 ">
-            <!-- Author Avatar -->
-            <div id="author-avatar">
-                <img src="/img/avatar.png" width="44px" height="44px" alt="yunfengsa's avatar">
-            </div>
-            <div>
-                <strong>yunfengsa</strong>
-                <span>10月 28, 2015</span>
-            </div>
-        </div>
-        <div id="post_entry-right-info">
-            <!-- Category -->
-            <span class="post_entry-category">
-                <a class="post_category-link" href="/categories/octopress/">octopress</a>
-            </span>
-            
-            
-            
-            <!-- Post Views -->
-            <span class="post_entry-views">
-                
-            </span>
-        </div>
-    </div>
-            
-</div>
-
-		
-		
-    
 		<!-- Index nav -->
         <nav class="material-nav mdl-cell mdl-cell--12-col">
             <a class="extend prev" rel="prev" href="/page/2/"><button class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon"><i class="material-icons" role="presentation">arrow_back</i></button></a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><a class="extend next" rel="next" href="/page/4/"><button class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon"><i class="material-icons" role="presentation">arrow_forward</i></button></a>
@@ -1105,7 +1100,7 @@ category_list
         </a>
         <ul class="dropdown-menu">
             <li>
-            <a class="sidebar_archives-link" href="/archives/2016/11/">十一月 2016<span class="sidebar_archives-count">4</span></a></li><li><a class="sidebar_archives-link" href="/archives/2016/10/">十月 2016<span class="sidebar_archives-count">1</span></a></li><li><a class="sidebar_archives-link" href="/archives/2016/05/">五月 2016<span class="sidebar_archives-count">2</span></a></li><li><a class="sidebar_archives-link" href="/archives/2016/04/">四月 2016<span class="sidebar_archives-count">5</span></a></li><li><a class="sidebar_archives-link" href="/archives/2016/01/">一月 2016<span class="sidebar_archives-count">3</span></a></li><li><a class="sidebar_archives-link" href="/archives/2015/12/">十二月 2015<span class="sidebar_archives-count">1</span></a></li><li><a class="sidebar_archives-link" href="/archives/2015/11/">十一月 2015<span class="sidebar_archives-count">4</span></a></li><li><a class="sidebar_archives-link" href="/archives/2015/10/">十月 2015<span class="sidebar_archives-count">12</span></a>
+            <a class="sidebar_archives-link" href="/archives/2016/12/">十二月 2016<span class="sidebar_archives-count">1</span></a></li><li><a class="sidebar_archives-link" href="/archives/2016/11/">十一月 2016<span class="sidebar_archives-count">4</span></a></li><li><a class="sidebar_archives-link" href="/archives/2016/10/">十月 2016<span class="sidebar_archives-count">1</span></a></li><li><a class="sidebar_archives-link" href="/archives/2016/05/">五月 2016<span class="sidebar_archives-count">2</span></a></li><li><a class="sidebar_archives-link" href="/archives/2016/04/">四月 2016<span class="sidebar_archives-count">5</span></a></li><li><a class="sidebar_archives-link" href="/archives/2016/01/">一月 2016<span class="sidebar_archives-count">3</span></a></li><li><a class="sidebar_archives-link" href="/archives/2015/12/">十二月 2015<span class="sidebar_archives-count">1</span></a></li><li><a class="sidebar_archives-link" href="/archives/2015/11/">十一月 2015<span class="sidebar_archives-count">4</span></a></li><li><a class="sidebar_archives-link" href="/archives/2015/10/">十月 2015<span class="sidebar_archives-count">12</span></a>
         </ul>
     </li>
 
@@ -1138,7 +1133,7 @@ category_list
     <li>
         <a href="/archives">
              文章总数
-             <span class="sidebar-badge">32</span>
+             <span class="sidebar-badge">33</span>
         </a>
     </li>
 </ul>

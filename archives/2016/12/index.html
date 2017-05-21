@@ -4,7 +4,7 @@
     <!-- Title -->
     
     <title>
-        标签: OpenCV | 云枫飒的笔记BLOG
+        archive_a: 2016/12 | 云枫飒的笔记BLOG
     </title>
     
     <!-- Favicons -->
@@ -40,7 +40,7 @@
     <!-- The Open Graph protocol -->
     <meta property="og:url" content="http://yunfengsa.github.io">
     <meta property="og:type" content="blog">
-    <meta property="og:title" content="标签: OpenCV | 云枫飒的笔记BLOG">
+    <meta property="og:title" content="archive_a: 2016/12 | 云枫飒的笔记BLOG">
     <meta property="og:description" content="Nothing can stop me moving on!">
     
      <!--[if lte IE 9]>
@@ -328,17 +328,17 @@
 	
 				
 		<!-- Post Title -->
-		<p class="article-headline-p"><a href="/2016/11/06/find-a-way-to-gesturerecognization/">Find A Way to Gesture Recognization</a></p>
+		<p class="article-headline-p"><a href="/2016/12/28/haar-hog-lbp/">haar_hog_lbp</a></p>
 	</div>
 
     <!-- Post Excerpt -->
     <div class="mdl-color-text--grey-600 mdl-card__supporting-text post_entry-content">
         
-            ####概述当前关于手势检测有很多种方法，肤色检测是其中比较流行的一种方式，这种方式简单，但是对背景的要求比较高。另一种方法则是利用凸包检测...
+            Haar
         
         &nbsp;&nbsp;&nbsp;
         <span>
-            <a href="/2016/11/06/find-a-way-to-gesturerecognization/" target="_self">继续阅读</a>
+            <a href="/2016/12/28/haar-hog-lbp/" target="_self">继续阅读</a>
         </span>
     </div>
     <!-- Post_entry Info-->
@@ -350,74 +350,13 @@
             </div>
             <div>
                 <strong>yunfengsa</strong>
-                <span>11月 06, 2016</span>
+                <span>12月 28, 2016</span>
             </div>
         </div>
         <div id="post_entry-right-info">
             <!-- Category -->
             <span class="post_entry-category">
-                <a class="post_category-link" href="/categories/opencv/">opencv</a>
-            </span>
-            
-            
-            
-            <!-- Post Views -->
-            <span class="post_entry-views">
                 
-            </span>
-        </div>
-    </div>
-            
-</div>
-
-		
-		
-    
-		
-			<!-- Paradox Thumbnail -->
-        	<div class="post_entry-module mdl-card mdl-cell mdl-cell--12-col fade out">
-    
-    <!-- Post Thumbnail -->
-	
-		
-			<!-- Random Thumbnail -->
-			<div class="post_thumbnail-random mdl-card__media mdl-color-text--grey-50">
-		
-	
-				
-		<!-- Post Title -->
-		<p class="article-headline-p"><a href="/2016/11/02/camkeandopencv/">CMake编译NDK，以及在OpenCV中的应用</a></p>
-	</div>
-
-    <!-- Post Excerpt -->
-    <div class="mdl-color-text--grey-600 mdl-card__supporting-text post_entry-content">
-        
-            ##在最新的android studio下开始友好支持CMake对C++/C的支持
-其简单的使用方法：1、 添加app/src/jni/name.cpp文件，注意对于android的视图中则显示在cpp文件夹下。
-例如这个函数是将图片进行黑白转换
-12345678910111213141516171819202122232425262728293031323334353637383940414243444546474849505152#include &lt;jni.h&gt;#include &lt;string&gt;#include &lt;opencv2/core.hpp&gt;extern "C" &#123;jstringJava_com_exexample_opencvandar_NdkLoader_stringFromJNI(        JNIEnv *env,        jobject /* this */) &#123;    std::string hello = "opencv图像处理";    return env-&gt;NewStringUTF(hello.c_str());&#125;jstringJava_com_exexample_opencvandar_NdkLoader_validate(        JNIEnv *env,        jobject,        jlong addrGray,        jlong addrRgba)&#123;    std::string hello2 = "Hello from validate";    return env-&gt;NewStringUTF(hello2.c_str());&#125;&#125;//图像处理extern "C"JNIEXPORT jintArray JNICALLJava_com_exexample_opencvandar_NdkLoader_getGrayImage(        JNIEnv *env,        jclass type,        jintArray pixels_,        jint w, jint h) &#123;    jint *pixels = env-&gt;GetIntArrayElements(pixels_, NULL);    // TODO    if(pixels==NULL)&#123;        return NULL;    &#125;    cv::Mat imgData(h, w, CV_8UC4, pixels);    uchar *ptr = imgData.ptr(0);    for (int i = 0; i &lt; w * h; i++) &#123;        int grayScale = (int) (ptr[4 * i + 2] * 0.299 + ptr[4 * i + 1] * 0.587                               + ptr[4 * i + 0] * 0.114);        ptr[4 * i + 1] = (uchar) grayScale;        ptr[4 * i + 2] = (uchar) grayScale;        ptr[4 * i + 0] = (uchar) grayScale;    &#125;    int size = w * h;    jintArray result = env-&gt;NewIntArray(size);    env-&gt;SetIntArrayRegion(result, 0, size, pixels);    env-&gt;ReleaseIntArrayElements(pixels_, pixels, 0);    return result;&#125;
-        
-        &nbsp;&nbsp;&nbsp;
-        <span>
-            <a href="/2016/11/02/camkeandopencv/" target="_self">继续阅读</a>
-        </span>
-    </div>
-    <!-- Post_entry Info-->
-    <div id="post_entry-info">
-        <div id="post_entry-left-info" class="mdl-card__supporting-text meta mdl-color-text--grey-600 ">
-            <!-- Author Avatar -->
-            <div id="author-avatar">
-                <img src="/img/avatar.png" width="44px" height="44px" alt="yunfengsa's avatar">
-            </div>
-            <div>
-                <strong>yunfengsa</strong>
-                <span>11月 02, 2016</span>
-            </div>
-        </div>
-        <div id="post_entry-right-info">
-            <!-- Category -->
-            <span class="post_entry-category">
-                <a class="post_category-link" href="/categories/ndk/">ndk</a>
             </span>
             
             
