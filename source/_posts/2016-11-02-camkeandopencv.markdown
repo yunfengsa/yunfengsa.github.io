@@ -7,7 +7,7 @@ categories: ndk
 tags: [CMake,NDK,OpenCV]
 ---
 
-##在最新的android studio下开始友好支持CMake对C++/C的支持
+## 在最新的android studio下开始友好支持CMake对C++/C的支持
 
 其简单的使用方法：
 1、 添加app/src/jni/name.cpp文件，注意对于android的视图中则显示在cpp文件夹下。
@@ -80,20 +80,15 @@ Java_com_exexample_opencvandar_NdkLoader_getGrayImage(
 # Sets the minimum version of CMake required to build the native
 # library. You should either keep the default value or only pass a
 # value of 3.4.0 or lower.
-
 #工程路径
 set(pathToProject D:/adroid_studio_projects/OpenCV/MyApplication)
 #OpenCV-android-sdk路径
 set(pathToOpenCv D:/OpenCV/OpenCV-android-sdk)
-
 #CMake版本信息
 cmake_minimum_required(VERSION 3.4.1)
 #支持-std=gnu++11
 set(CMAKE_VERBOSE_MAKEFILE on)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
-
-
-
 #CPP文件夹下带编译的cpp文件
 add_library( native-lib SHARED src/main/jni/native-lib.cpp )
 #配置加载native依赖
@@ -111,7 +106,6 @@ find_library( log-lib log )
 
 #target_link_libraries( native-lib $\{log-lib} )
 target_link_libraries( native-lib $\{log-lib} lib_opencv)
-
 
 ```
 
@@ -141,7 +135,7 @@ defaultConfig {
 
 ```
 
-##OpenCV 在android studio2.2以上的搭建过程
+## OpenCV 在android studio2.2以上的搭建过程
 
 第一步，下载[OpenCV-android-sdk](http://opencv.org/downloads.html)。
 
@@ -173,12 +167,6 @@ static {
 
 ```
 
-
-
-
-
-
-
-##参考资料
+## 参考资料
 
 [ OpenCV4Android释疑: 透析Android以JNI调OpenCV的三种方式(让OpenCVManager永不困扰)](http://blog.csdn.net/yanzi1225627/article/details/27863615)

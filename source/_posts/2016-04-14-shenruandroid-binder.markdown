@@ -8,12 +8,10 @@ tags: [binder]
 keywords: binder
 ---
 
-科比退役，无所谓喜欢不喜欢，姑且一首歌，静静听：
 
 <iframe width="560" height="315" src="https://www.youtube.com/embed/BZsXcc_tC-o" frameborder="0" allowfullscreen>
 墙外视频</iframe>
 
-<!--more-->
 
 [<h3>1.深入理解JNI</h3>](www.google.com)
 
@@ -29,11 +27,11 @@ keywords: binder
 
 现在进入正题。。。
 
-##概述
+## 概述
 
 我们在分析zygote的时候，zygote进程间通信用的是socket，除此之外还有管道、信号、消息队列、共享内存、内存映射、信号量。而Binder是android更加灵活的通信方式。android可以说是一个基于Binder通信的C/S架构体系。
 
-##依然距离说明一切：MediaServer and MediaPlayerService：
+## MediaServer and MediaPlayerService：
 
 MediaServer包括的服务有：AudioFlinger（音频核心服务），AudioPolicyService（音频策略服务），MediaPlayerService（多媒体系统服务），CameraService（摄像/照相服务）。
 
@@ -80,7 +78,7 @@ defaultServiceManager->addService{
 
 无非是新启动线程通过joinThreadPool读取binder设备，其实主线程也是调用了joinThreadPool读取binder设备，binder支持多线程操作。
 
-##前文中说过需要一个类来完成BnServiceManager功能：**ServiceManager**
+## 前文中说过需要一个类来完成BnServiceManager功能：**ServiceManager**
 
 <pre>我们可以直接跳过以上封装通过此直接和binder打交道</pre>
 
@@ -98,13 +96,13 @@ defaultServiceManager->addService{
 
 <p><img src="/images/binder/mediaplayer.JPG"></p>
 
-##到此，我们试着捋一下纯native的service实现
+## 到此，我们试着捋一下纯native的service实现
 
 * 假设我们的服务的名字叫Test，创建一个Test.cpp：1、defaultServiceManager。2、addService。3、startThreadPool。4、joinThreadPool。
 * 跨进程的C/S，本地需要一个BnTest，对端需要一个BpTest代理。
 * 然后需要实现BnTest和一个Bptest的实现
 
-##接下来就是我们关注的重点AIDL：
+## 接下来就是我们关注的重点AIDL：
 
 **步骤1：** 首先需要创建一个ITest.aidl
 

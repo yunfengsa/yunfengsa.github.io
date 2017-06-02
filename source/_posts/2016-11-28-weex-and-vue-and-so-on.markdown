@@ -3,7 +3,7 @@ layout: post
 title: "开启Vue学习之旅"
 date: 2016-11-28 14:47:50 +0800
 comments: true
-categories: weex
+categories: 前端
 tags: [weex]
 ---
 
@@ -15,9 +15,9 @@ tags: [weex]
 
 <!--more-->
 
-##[文档开始](http://cn.vuejs.org/v2/guide/class-and-style.html)
+## [文档开始](http://cn.vuejs.org/v2/guide/class-and-style.html)
 
-<h1>查漏不缺</h1>
+<h2>查漏不缺</h2>
 
 [webPack](http://gold.xitu.io/entry/574fe7c579bc440052f6d805)
 
@@ -27,7 +27,7 @@ tags: [weex]
 
 [ES6的相关新增知识点集合](http://www.infoq.com/cn/es6-in-depth/)
 
-##一个有趣的小例子
+## 一个有趣的小例子
 
 html：
 
