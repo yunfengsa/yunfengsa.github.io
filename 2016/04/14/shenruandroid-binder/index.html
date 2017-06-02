@@ -264,7 +264,7 @@ ga('create', 'UA-88090114-1', 'auto'); ga('send', 'pageview');
     </button>
 
     <ul class="post-toc-wrap mdl-menu mdl-menu--bottom-left mdl-js-menu mdl-js-ripple-effect" for="post-toc-trigger-btn" style="max-height:80vh; overflow-y:scroll;">
-        <ol class="post-toc"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#undefined"><span class="post-toc-number">1.</span> <span class="post-toc-text">1.深入理解JNI</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#undefined"><span class="post-toc-number">2.</span> <span class="post-toc-text">2.深入理解Zygote</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#undefined"><span class="post-toc-number">3.</span> <span class="post-toc-text">3.深入理解常见类（未完成）</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#undefined"><span class="post-toc-number">4.</span> <span class="post-toc-text">4.深入理解Binder</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#undefined"><span class="post-toc-number">5.</span> <span class="post-toc-text">5.深入理解Autdio（未完成）</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#undefined"><span class="post-toc-number">6.</span> <span class="post-toc-text">6.深入理解Surface</span></a></li></ol>
+        <ol class="post-toc"><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#undefined"><span class="post-toc-number">1.</span> <span class="post-toc-text">1.深入理解JNI</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#undefined"><span class="post-toc-number">2.</span> <span class="post-toc-text">2.深入理解Zygote</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#undefined"><span class="post-toc-number">3.</span> <span class="post-toc-text">3.深入理解常见类（未完成）</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#undefined"><span class="post-toc-number">4.</span> <span class="post-toc-text">4.深入理解Binder</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#undefined"><span class="post-toc-number">5.</span> <span class="post-toc-text">5.深入理解Autdio（未完成）</span></a></li><li class="post-toc-item post-toc-level-3"><a class="post-toc-link" href="#undefined"><span class="post-toc-number">6.</span> <span class="post-toc-text">6.深入理解Surface</span></a></li></ol></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#概述"><span class="post-toc-number"></span> <span class="post-toc-text">概述</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#MediaServer-and-MediaPlayerService："><span class="post-toc-number"></span> <span class="post-toc-text">MediaServer and MediaPlayerService：</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#前文中说过需要一个类来完成BnServiceManager功能：ServiceManager"><span class="post-toc-number"></span> <span class="post-toc-text">前文中说过需要一个类来完成BnServiceManager功能：ServiceManager</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#到此，我们试着捋一下纯native的service实现"><span class="post-toc-number"></span> <span class="post-toc-text">到此，我们试着捋一下纯native的service实现</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#接下来就是我们关注的重点AIDL："><span class="post-toc-number"></span> <span class="post-toc-text">接下来就是我们关注的重点AIDL：</span></a>
 
         <!--
         <li class="mdl-menu__item">
@@ -411,10 +411,9 @@ ga('create', 'UA-88090114-1', 'auto'); ga('send', 'pageview');
                 <!-- Post Content -->
                 <div id="post-content" class="mdl-color-text--grey-700 mdl-card__supporting-text fade out">
     
-        <p>科比退役，无所谓喜欢不喜欢，姑且一首歌，静静听：</p>
-<iframe width="560" height="315" src="https://www.youtube.com/embed/BZsXcc_tC-o" frameborder="0" allowfullscreen><br>墙外视频</iframe>
+        <iframe width="560" height="315" src="https://www.youtube.com/embed/BZsXcc_tC-o" frameborder="0" allowfullscreen><br>墙外视频</iframe>
 
-<a id="more"></a>
+
 <p><a href="www.google.com"><h3>1.深入理解JNI</h3></a></p>
 <p><a href="http://yunfengsa.github.io/blog/2016/04/13/shenruandroid/"><h3>2.深入理解Zygote</h3></a></p>
 <p><a href="www.google.com"><h3>3.深入理解常见类（未完成）</h3></a></p>
@@ -422,10 +421,8 @@ ga('create', 'UA-88090114-1', 'auto'); ga('send', 'pageview');
 <p><a href="www.google.com"><h3>5.深入理解Autdio（未完成）</h3></a></p>
 <p><a href="http://yunfengsa.github.io/blog/2016/04/22/shenruandroid-surface/"><h3>6.深入理解Surface</h3></a></p>
 <p>现在进入正题。。。</p>
-<p>##概述</p>
-<p>我们在分析zygote的时候，zygote进程间通信用的是socket，除此之外还有管道、信号、消息队列、共享内存、内存映射、信号量。而Binder是android更加灵活的通信方式。android可以说是一个基于Binder通信的C/S架构体系。</p>
-<p>##依然距离说明一切：MediaServer and MediaPlayerService：</p>
-<p>MediaServer包括的服务有：AudioFlinger（音频核心服务），AudioPolicyService（音频策略服务），MediaPlayerService（多媒体系统服务），CameraService（摄像/照相服务）。</p>
+<h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>我们在分析zygote的时候，zygote进程间通信用的是socket，除此之外还有管道、信号、消息队列、共享内存、内存映射、信号量。而Binder是android更加灵活的通信方式。android可以说是一个基于Binder通信的C/S架构体系。</p>
+<h2 id="MediaServer-and-MediaPlayerService："><a href="#MediaServer-and-MediaPlayerService：" class="headerlink" title="MediaServer and MediaPlayerService："></a>MediaServer and MediaPlayerService：</h2><p>MediaServer包括的服务有：AudioFlinger（音频核心服务），AudioPolicyService（音频策略服务），MediaPlayerService（多媒体系统服务），CameraService（摄像/照相服务）。</p>
 <p>MS（MediaServer）是一个由c++实现的可执行程序，在网上找了一个源码解析:</p>
 <p><img src="/images/binder/maidmediaserver.jpg"></p> 
 
@@ -448,8 +445,7 @@ ga('create', 'UA-88090114-1', 'auto'); ga('send', 'pageview');
 <p>通过defaultServiceManager获取BpServiceManager，通过remote获取BpBinder调用其transact，把通信给了Bpbinder。那么问题到底他们是怎么通信的呢？接下来进入通信层了，transact必然是大有所为了，详细代码就不展开，基本流程就是函数会有一个IPCThreadState函数，这个函数会在线程的线程本地存储空间（TLS）操作数据内容，这个空间是线程私有的，而每个IPCThreadState有一个<em>mIn（用来接收来自BInder设备的数据）、一个mOut（存储发往Binder设备数据）</em></p>
 <p><strong>通过mIn、mOut通信，然后开始startThreadPool()，然后joinThread</strong></p>
 <p>无非是新启动线程通过joinThreadPool读取binder设备，其实主线程也是调用了joinThreadPool读取binder设备，binder支持多线程操作。</p>
-<p>##前文中说过需要一个类来完成BnServiceManager功能：<strong>ServiceManager</strong></p>
-<pre>我们可以直接跳过以上封装通过此直接和binder打交道</pre>
+<h2 id="前文中说过需要一个类来完成BnServiceManager功能：ServiceManager"><a href="#前文中说过需要一个类来完成BnServiceManager功能：ServiceManager" class="headerlink" title="前文中说过需要一个类来完成BnServiceManager功能：ServiceManager"></a>前文中说过需要一个类来完成BnServiceManager功能：<strong>ServiceManager</strong></h2><pre>我们可以直接跳过以上封装通过此直接和binder打交道</pre>
 
 <p><img src="/images/binder/servicemanager.jpg"></p>
 
@@ -463,14 +459,12 @@ ga('create', 'UA-88090114-1', 'auto'); ga('send', 'pageview');
 <p>调用函数的基本流程就是将数据打包发送给BInder驱动，并由BpBinder中的handle值找到对应端的处理者来处理。在MediaPlayerService便会驻留在MediaServer进程中，这个进程有两个线程在talkwitheDriver，MediaPlayerService的继承关系：</p>
 <p><img src="/images/binder/mediaplayer.JPG"></p>
 
-<p>##到此，我们试着捋一下纯native的service实现</p>
-<ul>
+<h2 id="到此，我们试着捋一下纯native的service实现"><a href="#到此，我们试着捋一下纯native的service实现" class="headerlink" title="到此，我们试着捋一下纯native的service实现"></a>到此，我们试着捋一下纯native的service实现</h2><ul>
 <li>假设我们的服务的名字叫Test，创建一个Test.cpp：1、defaultServiceManager。2、addService。3、startThreadPool。4、joinThreadPool。</li>
 <li>跨进程的C/S，本地需要一个BnTest，对端需要一个BpTest代理。</li>
 <li>然后需要实现BnTest和一个Bptest的实现</li>
 </ul>
-<p>##接下来就是我们关注的重点AIDL：</p>
-<p><strong>步骤1：</strong> 首先需要创建一个ITest.aidl</p>
+<h2 id="接下来就是我们关注的重点AIDL："><a href="#接下来就是我们关注的重点AIDL：" class="headerlink" title="接下来就是我们关注的重点AIDL："></a>接下来就是我们关注的重点AIDL：</h2><p><strong>步骤1：</strong> 首先需要创建一个ITest.aidl</p>
 <p>ITest.aidl</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="keyword">package</span> com.test.service</div><div class="line"><span class="keyword">import</span> com.test.complicateDataStrcture</div><div class="line"></div><div class="line"><span class="class"><span class="keyword">interface</span> <span class="title">ITest</span></span>&#123;</div><div class="line"></div><div class="line">	<span class="function"><span class="keyword">int</span> <span class="title">getTest</span><span class="params">(out compicateDataStructure)</span></span>;  <span class="comment">//注意没有修饰符，in表示输入参数，out表示输出参数</span></div><div class="line">	<span class="function"><span class="keyword">int</span> <span class="title">setTest</span><span class="params">(in String name,in <span class="keyword">boolean</span> reStartServer)</span></span>;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <p>这个时候编译器会生成一个com.test.ITest.java</p>
