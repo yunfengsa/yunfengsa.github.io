@@ -52,11 +52,7 @@ module.exports = {
   plugins: [
     new HtmlWebPackPlugin({
       template: path.join(__dirname,'src','index.html'),
-      filename: '../index.html'
+      filename: './index.html'
     }),
   ],
-  devServer: {
-    contentBase: './src',
-    hot: true
-  }
 };
