@@ -19,9 +19,6 @@ export default class extends Component {
 
         <h1>just for test</h1>
 
-        <section></section>
-          {/* {this.props.postList.map(post => <Post {...post} key={post.id} />)} */}
-        </section>
       </main>
     )
   }
