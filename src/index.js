@@ -1,9 +1,5 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-let HelloWorld = () => {
-  return [
-    <h1>welcome to my house!</h1>,
-  ]
-}
+import App from './app.jsx';
 
-ReactDOM.render(<HelloWorld />, document.getElementById('root'));
+ReactDOM.render(<App />, document.getElementById('root'));

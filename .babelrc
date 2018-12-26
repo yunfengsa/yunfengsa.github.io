@@ -7,5 +7,5 @@
       },
       "useBuiltIns": "usage"
     }], "@babel/preset-react"
-  ],
+  ]
 }
