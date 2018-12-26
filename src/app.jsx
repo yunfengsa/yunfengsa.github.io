@@ -1,10 +1,11 @@
 import React from 'react';
-const {Component} = React;
-export default class App extends Component {
-  render() {
-    console.log('123')
-    return <div>
-      welcome to my house
+import TopBar from './components/topBar/index';
+import Content from './components/content';
+import Canvas from './components/canvas/logo';
+export default () => {
+  return <div>
+      <TopBar />
+      <Canvas />
+      <Content />
     </div>
-  }
 }
