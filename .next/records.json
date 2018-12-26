@@ -471,16 +471,19 @@
       "static/1DOjBCoPbaQp7qzt8agBc/pages/_error.js": 5,
       "static/kaFM~3JGf75J1ji~2C5O5/pages/index.js": 6,
       "static/kaFM~3JGf75J1ji~2C5O5/pages/_app.js": 7,
-      "static/kaFM~3JGf75J1ji~2C5O5/pages/_error.js": 8
+      "static/kaFM~3JGf75J1ji~2C5O5/pages/_error.js": 8,
+      "static/5dhPCklRJLNWI1tIkI1iI/pages/index.js": 3,
+      "static/5dhPCklRJLNWI1tIkI1iI/pages/_app.js": 4,
+      "static/5dhPCklRJLNWI1tIkI1iI/pages/_error.js": 5
     },
     "bySource": {},
     "usedIds": [
       0,
       1,
       2,
-      6,
-      7,
-      8
+      3,
+      4,
+      5
     ]
   }
 }

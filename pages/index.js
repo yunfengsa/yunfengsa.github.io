@@ -17,7 +17,7 @@ export default class extends Component {
           <title>杂货铺</title>
         </Head>
 
-        <h1>just for test</h1>
+        <h1>just for test in out</h1>
 
       </main>
     )
