@@ -4,7 +4,7 @@ export default class ContentState {
   @observable infoList = [];
   @action
   fetchInfo() {
-    fetchJsonp('http://127.0.0.1:3000/getinfo').then(res => { //http://47.110.48.184:3000/getinfo
+    fetchJsonp('http://47.110.48.184:3000/getinfo').then(res => { //http://47.110.48.184:3000/getinfo
       res.json().then(list => {
         console.log(list)
         runInAction(() => {
