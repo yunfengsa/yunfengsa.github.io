@@ -62,8 +62,9 @@ function SnowPlugin(props) {
     <div className={styles.root}>
       <div className={styles.bkcontainer}>
         <img className={styles.bkimg} 
-          src="https://a.ksd-i.com/s/800_86400_89c6e40f283fec1fc803c6b0b00b671b/static.koreastardaily.com/2017-04-26/93893-509288.jpg" />
-        <img className={styles.bkimg}  src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1545822856194&di=d4b4beb8803ea52a2de6b05d6509e936&imgtype=0&src=http%3A%2F%2Fphotocdn.sohu.com%2F20150506%2FImg412494447.jpg" />
+          src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1545910452210&di=5497271a95b800a4d07f5912407f6fc2&imgtype=0&src=http%3A%2F%2Fupload.mnw.cn%2F2015%2F0512%2F1431437317161.jpg" />
+        <img className={styles.bkimg}  
+          src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1545822856194&di=d4b4beb8803ea52a2de6b05d6509e936&imgtype=0&src=http%3A%2F%2Fphotocdn.sohu.com%2F20150506%2FImg412494447.jpg" />
       </div>
       <canvas id="canvas" className={styles.snow}>
 	      你的浏览器居然不支持Canvas？！赶快换一个吧！！

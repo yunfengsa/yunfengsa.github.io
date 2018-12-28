@@ -6,9 +6,10 @@
         "browsers": ["> 1%", "last 2 versions", "not ie <= 8"]
       },
       "useBuiltIns": "usage"
-    }], "@babel/preset-react"
+    }], "@babel/preset-react", "mobx"
   ],
-  "plugins": ["@babel/plugin-proposal-class-properties", ["import", {
+  "plugins": [["@babel/plugin-proposal-decorators", { "legacy": true }], // 开始忘记加了 我个小傻蛋 
+    ["@babel/plugin-proposal-class-properties", {"loose" : true }], ["import", {
     "libraryName": "@material-ui/core",
     "libraryDirectory": "components",  // default: lib
     "camel2DashComponentName": false,  // default: true

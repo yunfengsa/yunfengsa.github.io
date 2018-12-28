@@ -6,15 +6,17 @@ import GridListTile from '@material-ui/core/GridListTile';
 import GridListTileBar from '@material-ui/core/GridListTileBar';
 import IconButton from '@material-ui/core/IconButton';
 import InfoIcon from '@material-ui/icons/Info';
-import tileData from './data';
+import { observer } from "mobx-react";
+
+import SubList from './list';
 
 const styles = theme => ({
   root: {
+    marginTop: 50,
     display: 'flex',
     flexWrap: 'wrap',
     justifyContent: 'space-around',
     overflow: 'hidden',
-    backgroundColor: theme.palette.background.paper,
   },
   gridList: {
     width: '100%',
@@ -24,34 +26,54 @@ const styles = theme => ({
     color: 'rgba(255, 255, 255, 0.54)',
   },
 });
+@observer
+class TitlebarGridList extends React.Component {
 
-function TitlebarGridList(props) {
-  const { classes } = props;
+  constructor(props) {
+    super(props);
+  }
 
-  return (
-    <div className={classes.root}>
-      <GridList spacing={50} cellHeight={180} cols={4} className={classes.gridList}>
-        {tileData.map(tile => (
-          <GridListTile key={tile.img}>
-            <img src="http://lorempixel.com/400/200/" alt={tile.title} />
-            <GridListTileBar
-              title={tile.title}
-              subtitle={<span>by: {tile.author}</span>}
-              actionIcon={
-                <IconButton className={classes.icon}>
-                  <InfoIcon />
-                </IconButton>
-              }
-            />
+  componentDidMount() {
+    this.props.store.fetchInfo();
+  }
+  
+  render() {
+    const { classes } = this.props;
+    const store = this.props.store;
+    return (
+      <div className={classes.root}>
+        <GridList spacing={100} cellHeight={180} cols={2} className={classes.gridList}>
+          <GridListTile key="0"> 
+            <SubList list={store.infoList} />
           </GridListTile>
-        ))}
-      </GridList>
-    </div>
-  );
+          <GridListTile key="0"> 
+            <SubList list={store.infoList} />
+          </GridListTile>
+        </GridList>
+        {/* <SubList list={store.infoList} /> */}
+      </div>
+    );
+  }
+  
 }
 
 TitlebarGridList.propTypes = {
   classes: PropTypes.object.isRequired,
 };
 
-export default withStyles(styles)(TitlebarGridList);
+
+export default (withStyles(styles)(TitlebarGridList));
+
+
+// <GridListTile key={tile.img}>
+            //   <img src="http://lorempixel.com/400/200/" alt={tile.title} />
+            //   <GridListTileBar
+            //     title={tile.title}
+            //     subtitle={tile.subTitle}
+            //     actionIcon={
+            //       <IconButton className={classes.icon}>
+            //         <InfoIcon />
+            //       </IconButton>
+            //     }
+            //   />
+            // </GridListTile>
