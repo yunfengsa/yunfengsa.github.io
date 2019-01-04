@@ -2,9 +2,9 @@ import React from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
-import ListItemAvatar from '@material-ui/core/ListItemAvatar';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
+// import ListItemAvatar from '@material-ui/core/ListItemAvatar';
+// import ListItemIcon from '@material-ui/core/ListItemIcon';
+// import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import ListItemText from '@material-ui/core/ListItemText';
 
 const styles = {
@@ -22,16 +22,19 @@ const styles = {
     right: 0,
     top: 0,
     bottom: 0
+  },
+  item: {
+    cursor: 'pointer'
   }
 }
 
 const list = (props) => {
-  const {list, classes} = props;
+  const {list, classes, showIframe} = props;
 
   return (
     <List className={classes[`container`]}>
       {list && list.map(_ => (
-        <ListItem>
+        <ListItem className={classes.item} onClick={() => {props.showIframe && props.showIframe(_.href)}}>
           <ListItemText primary={_.title} secondary={_.subTitle} />
         </ListItem>
       ))}

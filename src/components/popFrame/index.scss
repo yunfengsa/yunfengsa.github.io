@@ -1,0 +1,23 @@
+.root {
+  position: absolute;
+  z-index: 999;
+  width: 80%;
+  height: 80%;
+  top: 10%;
+  left: 10%;
+  background-color: bisque
+}
+.iframe {
+  width: 100%;
+  height: 100%;
+}
+.button {
+  position: absolute;
+  background-color: lightcoral;
+  top: 0;
+  right: -5%;
+  width: 5%;
+  height: 5%;
+  z-index: 1000;
+  cursor: pointer;
+}

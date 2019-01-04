@@ -29,7 +29,8 @@ const dev = function() {
 
 const publish = function() {
   build();
-  git.add();
+  return gulp.src('./').pipe(git.add()).pipe(git.commit('run publish and post'));
+  // git.add();
 }
 module.exports = {
   dev,
