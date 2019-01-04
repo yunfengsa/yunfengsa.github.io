@@ -29,8 +29,16 @@ const dev = function() {
 
 const publish = function() {
   build();
-  return gulp.src('./').pipe(git.add()).pipe(git.commit('run publish and post'));
+  gulp.src('./').pipe(git.add()).pipe(git.commit('run publish and post'));
+  push();
   // git.add();
+}
+const push = function () {
+  git.push('origin', 'master', function(err) {
+    if (err) {
+      throw err;
+    }
+  })
 }
 module.exports = {
   dev,
