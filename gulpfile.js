@@ -43,5 +43,6 @@ const push = function () {
 module.exports = {
   dev,
   build,
-  publish
+  publish,
+  push
 }
