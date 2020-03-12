@@ -1,0 +1,19 @@
+{
+  "name": "snowpack-test",
+  "version": "1.0.0",
+  "description": "snowpack demo",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "dev": "servor --reload",
+    "pack": "snowpack"
+  },
+  "dependencies": {
+    "htm": "^3.0.3",
+    "preact": "^10.3.3"
+  },
+  "devDependencies": {
+    "servor": "^3.2.0",
+    "snowpack": "^1.6.0"
+  }
+}
